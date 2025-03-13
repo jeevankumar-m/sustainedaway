@@ -1,0 +1,116 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap");
+
+@font-face {
+  font-family: "SF Pro";
+  src: url("https://fonts.cdnfonts.com/s/94600/SFPRODISPLAYREGULAR.woff") format("woff");
+}
+
+body {
+  background: linear-gradient(135deg, #d4edda, #81c784); /* Light to deep green */
+  font-family: "SF Pro", "Inter", sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+/* Earth Emoji Animation */
+.earth-emoji {
+  font-size: 50px;
+  display: block;
+  margin: 10px auto;
+  animation: float 4s ease-in-out infinite, earthRotate 8s linear infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes earthRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Login Card */
+.auth-container {
+  text-align: center;
+}
+
+.auth-card {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 1s ease-in-out;
+}
+
+/* Typography */
+.auth-title {
+  color: #2e7d32;
+  font-weight: bold;
+  font-size: 24px;
+  margin-bottom: 15px;
+}
+
+/* Inputs */
+.auth-input {
+  margin-top: 12px;
+}
+
+.auth-input input {
+  transition: all 0.3s ease;
+}
+
+.auth-input input:focus {
+  border-color: #2e7d32;
+  box-shadow: 0px 0px 5px #81c784;
+}
+
+/* Buttons */
+.auth-button {
+  background-color: #388e3c !important;
+  color: white !important;
+  font-weight: bold;
+  transition: transform 0.2s ease-in-out;
+}
+
+.auth-button:hover {
+  background-color: #2e7d32 !important;
+  transform: scale(1.05);
+}
+
+.google-button {
+  background-color: #ffffff !important;
+  color: #388e3c !important;
+  border: 1px solid #388e3c !important;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.google-button:hover {
+  background-color: #c8e6c9 !important;
+  transform: scale(1.05);
+}
+
+.toggle-button {
+  color: #388e3c !important;
+  border-color: #388e3c !important;
+}
+
+.toggle-button:hover {
+  background-color: #c8e6c9 !important;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
