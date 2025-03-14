@@ -1,61 +1,44 @@
 const express = require("express");
 const cors = require("cors");
-const bodyParser = require("body-parser");
-const { spawn } = require("child_process"); // Import spawn for subprocesses
-const fs = require("fs");
+const { spawn } = require("child_process");
 
 const app = express();
-const PORT = 5000;
-
 app.use(cors());
-app.use(bodyParser.json({ limit: "50mb" }));
-app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
+app.use(express.json({ limit: "10mb" })); // Ensure JSON support
 
-app.post("/api/process-image", async (req, res) => {
+app.post("/api/process-image", (req, res) => {
+  console.log("🔍 Received Image for Processing...");
+  
+  const { base64Image } = req.body;
+  if (!base64Image) {
+    return res.json({ error: "No image provided." });
+  }
+
+  const imagePath = "temp_image.jpg"; // Save base64 image temporarily
+  require("fs").writeFileSync(imagePath, Buffer.from(base64Image, "base64"));
+
+  // Spawn Python process
+  const python = spawn("python", ["process_image.py", imagePath]);
+
+  let result = "";
+  python.stdout.on("data", (data) => {
+    result += data.toString();
+  });
+
+  python.stderr.on("data", (data) => {
+    console.error("❌ Error from Python:", data.toString());
+  });
+
+  python.on("close", (code) => {
+    console.log("✅ Processed Image Result:", result);
+    
     try {
-        const { base64Image } = req.body;
-        if (!base64Image) {
-            return res.status(400).json({ error: "No image provided" });
-        }
-
-        console.log("🔍 Received Image for Processing...");
-
-        // Convert Base64 to an Image File
-        const imagePath = "image.jpg";
-        const imageBuffer = Buffer.from(base64Image, "base64");
-        fs.writeFileSync(imagePath, imageBuffer);
-
-        // Run Python script
-        const pythonProcess = spawn("python", ["process_image.py", imagePath]);
-
-        let result = "";
-
-        pythonProcess.stdout.on("data", (data) => {
-            result += data.toString();
-        });
-
-        pythonProcess.stderr.on("data", (data) => {
-            console.error(`🔥 Python Error: ${data}`);
-        });
-
-        pythonProcess.on("close", (code) => {
-            if (code === 0) {
-                console.log("✅ Processed Image Result:", result);
-                res.json({ extractedText: result.trim() });
-            } else {
-                res.status(500).json({ error: "Failed to process the image" });
-            }
-
-            // Delete the image after processing
-            fs.unlinkSync(imagePath);
-        });
-
+      const jsonResponse = JSON.parse(result.trim()); // Ensure valid JSON
+      res.json(jsonResponse); // ✅ Send it correctly
     } catch (error) {
-        console.error("🔥 Error processing image:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+      res.json({ error: "Invalid JSON response from AI." });
     }
+  });
 });
 
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+app.listen(5000, () => console.log("🚀 Server running on port 5000"));
