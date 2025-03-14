@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Container, Typography, Button, CircularProgress } from "@mui/material";
+import { Container, Typography, IconButton, CircularProgress } from "@mui/material";
+import { FaCamera, FaBars, FaHome, FaHistory, FaRecycle, FaSignOutAlt } from "react-icons/fa";
+import "./Dashboard.css"; // External CSS for styling
 
 const Dashboard = () => {
   const [capturedImage, setCapturedImage] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [responseText, setResponseText] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -64,25 +67,54 @@ const Dashboard = () => {
   };
 
   return (
-    <Container maxWidth="sm" style={{ textAlign: "center", padding: "20px" }}>
-      <Typography variant="h3" color="green">Sustainaway Scanner 🌱</Typography>
+    <Container className="dashboard">
+      {/* Top Bar with Menu and Sign Out */}
+      <div className="top-bar">
+        <IconButton onClick={() => setMenuOpen(!menuOpen)} className="menu-button">
+          <FaBars />
+        </IconButton>
+        <Typography variant="h5" className="title">Sustainaway 🌱</Typography>
+        <IconButton className="sign-out-button">
+          <FaSignOutAlt />
+        </IconButton>
+      </div>
 
-      <video ref={videoRef} autoPlay playsInline style={{ width: "100%", marginTop: "10px" }} />
-      <canvas ref={canvasRef} style={{ display: "none" }} />
+      {/* Camera View */}
+      <div className="camera-container">
+        <video ref={videoRef} autoPlay playsInline className="camera-view" />
+        <canvas ref={canvasRef} style={{ display: "none" }} />
+      </div>
 
-      <Button variant="contained" color="primary" onClick={captureImage} style={{ margin: "20px" }}>
-        Capture Image
-      </Button>
+      {/* Capture Button */}
+      <div className="capture-container">
+        <IconButton className="capture-button" onClick={captureImage}>
+          <FaCamera />
+        </IconButton>
+      </div>
 
-      {capturedImage && <img src={capturedImage} alt="Captured" style={{ maxWidth: "100%", marginTop: "10px" }} />}
-
-      {processing && <CircularProgress style={{ marginTop: "20px" }} />}
-
+      {/* AI Response Box */}
       {responseText && (
-        <Typography variant="h6" style={{ marginTop: "10px" }}>
-          Extracted Data: {responseText}
-        </Typography>
+        <div className="response-box">
+          <Typography variant="h6">🧠 AI Response:</Typography>
+          <p>{responseText}</p>
+        </div>
       )}
+
+      {/* Loading Indicator */}
+      {processing && <CircularProgress className="loading-spinner" />}
+
+      {/* Background Overlay when Menu is Open */}
+      {menuOpen && <div className="menu-overlay" onClick={() => setMenuOpen(false)}></div>}
+
+      {/* Floating Menu - Sliding in from the Left */}
+      <div className={`side-menu ${menuOpen ? "open" : ""}`}>
+        <ul>
+          <li onClick={() => setMenuOpen(false)}><FaHome /> Home</li>
+          <li onClick={() => setMenuOpen(false)}><FaHistory /> History</li>
+          <li onClick={() => setMenuOpen(false)}><FaRecycle /> Recycle Guide</li>
+          <li onClick={() => setMenuOpen(false)}><FaSignOutAlt /> Sign Out</li>
+        </ul>
+      </div>
     </Container>
   );
 };
