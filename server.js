@@ -1,6 +1,16 @@
+const admin = require("firebase-admin");
+const serviceAccount = require("./serviceAccountKey.json"); // Path to Firebase service account key
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+const db = admin.firestore();
+
 const express = require("express");
 const cors = require("cors");
 const { spawn } = require("child_process");
+const fs = require("fs"); // Required for file handling
 
 const app = express();
 app.use(cors());
@@ -15,7 +25,7 @@ app.post("/api/process-image", (req, res) => {
   }
 
   const imagePath = "temp_image.jpg"; // Save base64 image temporarily
-  require("fs").writeFileSync(imagePath, Buffer.from(base64Image, "base64"));
+  fs.writeFileSync(imagePath, Buffer.from(base64Image, "base64"));
 
   // Spawn Python process
   const python = spawn("python", ["process_image.py", imagePath]);
@@ -29,12 +39,19 @@ app.post("/api/process-image", (req, res) => {
     console.error("❌ Error from Python:", data.toString());
   });
 
-  python.on("close", (code) => {
+  python.on("close", async (code) => {
     console.log("✅ Processed Image Result:", result);
     
     try {
       const jsonResponse = JSON.parse(result.trim()); // Ensure valid JSON
-      res.json(jsonResponse); // ✅ Send it correctly
+      
+      // 🔥 Store processed data in Firestore (history collection)
+      const docRef = await db.collection("history").add(jsonResponse);
+      console.log(`📌 Data saved to Firestore with ID: ${docRef.id}`);
+
+      // Send response with Firestore ID
+      res.json({ id: docRef.id, ...jsonResponse });
+
     } catch (error) {
       res.json({ error: "Invalid JSON response from AI." });
     }

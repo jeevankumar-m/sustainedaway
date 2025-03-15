@@ -1,3 +1,7 @@
+body, html {
+  overflow: auto;
+}
+
 .dashboard {
     text-align: center;
     background: linear-gradient(to bottom, #e3f2e6, #d6f5d6);
@@ -24,18 +28,6 @@
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
     z-index: 1000;
   }
-
-  .top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 20px;
-  background: white;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  width: 100vw; /* Ensure full width */
-}
-
   
   /* 🔹 Menu Button */
   .menu-button {
@@ -57,14 +49,14 @@
   /* 🔹 Side Menu */
   .side-menu {
     position: fixed;
-    top: 0;
     left: -250px;
+    top: 0;
     width: 250px;
-    height: 100vh;
-    background: white;
-    box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
-    padding-top: 60px;
+    height: 100%;
+    background: #2c5d3f;
+    color: white;
     transition: left 0.3s ease-in-out;
+    padding-top: 60px;
   }
   
   .side-menu.open {
@@ -76,15 +68,17 @@
     padding: 0;
   }
   
-  .side-menu li {
-    padding: 15px 20px;
+  .side-menu ul li {
+    padding: 12px 20px;
+    cursor: pointer;
     display: flex;
     align-items: center;
     gap: 10px;
-    cursor: pointer;
-    color: #333;
   }
   
+  .side-menu ul li:hover {
+    background: #3e7a59;
+  }
   .side-menu li.active {
     font-weight: bold;
     color: green;
@@ -257,5 +251,34 @@
   
   .retake-button:hover {
     background-color: #f0f0f0 !important; /* Slight gray on hover */
+  }
+  
+  .history-card {
+    background-color: #f8fdf4;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1);
+    margin: 12px auto;
+    max-width: 400px;
+    text-align: left;
+    font-family: 'Arial', sans-serif;
+  }
+  
+  .history-card h3 {
+    font-size: 18px;
+    color: #2c5d3f;
+    margin-bottom: 8px;
+  }
+  
+  .history-card p {
+    font-size: 14px;
+    color: #4a4a4a;
+    margin: 4px 0;
+  }
+
+  .history-container {
+    max-height: 75vh; /* ✅ Limits the height */
+    overflow-y: auto; /* ✅ Enables scrolling */
+    padding: 10px;
   }
   
