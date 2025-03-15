@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Container, Typography, IconButton, CircularProgress } from "@mui/material";
-import { FaCamera, FaBars, FaHome, FaHistory, FaRecycle, FaSignOutAlt } from "react-icons/fa";
+import { FaCamera, FaBars, FaHome, FaHistory, FaRecycle, FaMapMarkerAlt, FaSignOutAlt } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { getAuth, signOut } from "firebase/auth";
 import "./Dashboard.css"; // External CSS for styling
 
 const Dashboard = () => {
@@ -11,73 +13,69 @@ const Dashboard = () => {
   const [stream, setStream] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const navigate = useNavigate();
+  const auth = getAuth();
 
   useEffect(() => {
-    const startCamera = async () => {
-      try {
-        const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
-        if (videoRef.current) {
-          videoRef.current.srcObject = mediaStream;
-          setStream(mediaStream);
-        }
-      } catch (error) {
-        console.error("Error accessing camera:", error);
-        setResponseText("Camera access denied.");
-      }
-    };
-
     startCamera();
-
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop()); // Stop camera on unmount
-      }
-    };
+    return () => stopCamera(); // Stop camera on unmount
   }, []);
 
-  const captureImage = () => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
+  const startCamera = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+        setStream(mediaStream);
+      }
+    } catch (error) {
+      console.error("Error accessing camera:", error);
+      setResponseText("Camera access denied.");
+    }
+  };
 
-    if (!video || !canvas) return;
-
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    const context = canvas.getContext("2d");
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    const dataUrl = canvas.toDataURL("image/jpeg");
-    setCapturedImage(dataUrl);
-
-    processImage(dataUrl.split(",")[1]);
-
-    // Stop the camera after capturing
+  const stopCamera = () => {
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
     }
   };
 
+  const captureImage = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext("2d");
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const dataUrl = canvas.toDataURL("image/jpeg");
+    setCapturedImage(dataUrl);
+    processImage(dataUrl.split(",")[1]);
+
+    stopCamera(); // Stop camera after capturing
+  };
+
   const processImage = async (base64Image) => {
     setProcessing(true);
     setResponseText("");
-  
+
     try {
       const response = await fetch("http://localhost:5000/api/process-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ base64Image }),
       });
-  
+
       const data = await response.json();
-      console.log("📝 AI Response Received:", data); // 🔍 Debug Log
-  
+      console.log("📝 AI Response Received:", data);
+
       if (data.error) {
-        setResponseText(`⚠️ Error: ${data.error}`); // Show error
+        setResponseText(`⚠️ Error: ${data.error}`);
       } else {
-        // ✅ Debugging Keys from Response
-        console.log("Keys in Response:", Object.keys(data)); 
-  
+        console.log("Keys in Response:", Object.keys(data));
+
         setResponseText(
           `📦 Product: ${data["Product Name"]}<br />` +
           `🏭 Brand: ${data.Brand}<br />` +
@@ -88,7 +86,6 @@ const Dashboard = () => {
           `🌱 Alternative Options: ${data["Alternative Options"]}<br />` +
           `⭐ Sustainability Rating: ${data["Sustainability Rating"]}/5`
         );
-        
       }
     } catch (error) {
       console.error("❌ Error processing image:", error);
@@ -97,8 +94,15 @@ const Dashboard = () => {
       setProcessing(false);
     }
   };
-  
-  
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      navigate("/"); // Redirect to login after sign out
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   return (
     <Container className="dashboard">
@@ -108,7 +112,7 @@ const Dashboard = () => {
           <FaBars />
         </IconButton>
         <Typography variant="h5" className="title">Sustainaway 🌱</Typography>
-        <IconButton className="sign-out-button">
+        <IconButton className="sign-out-button" onClick={handleSignOut}>
           <FaSignOutAlt />
         </IconButton>
       </div>
@@ -130,28 +134,25 @@ const Dashboard = () => {
         </IconButton>
       </div>
 
- {/* AI Response Box */}
-{responseText && (
-  <div className="response-box">
-    <Typography variant="h6">🧠 AI Response:</Typography>
-    <p dangerouslySetInnerHTML={{ __html: responseText.replace(/\n/g, "<br>") }} />
-  </div>
-)}
-
+      {/* AI Response Box */}
+      {responseText && (
+        <div className="response-box">
+          <Typography variant="h6">🧠 AI Response:</Typography>
+          <p dangerouslySetInnerHTML={{ __html: responseText.replace(/\n/g, "<br>") }} />
+        </div>
+      )}
 
       {/* Loading Indicator */}
       {processing && <CircularProgress className="loading-spinner" />}
-
-      {/* Background Overlay when Menu is Open */}
-      {menuOpen && <div className="menu-overlay" onClick={() => setMenuOpen(false)}></div>}
 
       {/* Floating Menu */}
       <div className={`side-menu ${menuOpen ? "open" : ""}`}>
         <ul>
           <li onClick={() => setMenuOpen(false)}><FaHome /> Home</li>
-          <li onClick={() => setMenuOpen(false)}><FaHistory /> History</li>
           <li onClick={() => setMenuOpen(false)}><FaRecycle /> Recycle Guide</li>
-          <li onClick={() => setMenuOpen(false)}><FaSignOutAlt /> Sign Out</li>
+          <li onClick={() => setMenuOpen(false)}><FaMapMarkerAlt /> NGO Locator</li>
+          <li onClick={() => setMenuOpen(false)}><FaHistory /> History</li>
+          <li onClick={handleSignOut}><FaSignOutAlt /> Sign Out</li>
         </ul>
       </div>
     </Container>
