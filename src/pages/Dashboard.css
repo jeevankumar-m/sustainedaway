@@ -10,19 +10,86 @@
 }
 
 /* Top Navigation Bar */
+/* 🔹 Top Bar */
 .top-bar {
     position: fixed;
     top: 0;
-    width: 100%;
+    left: 0;
+    width: 100vw;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    background: #fff;
+    justify-content: space-between;
     padding: 10px 20px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    z-index: 1000; 
+    background: white;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+  }
+
+  .top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: white;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  width: 100vw; /* Ensure full width */
 }
 
+  
+  /* 🔹 Menu Button */
+  .menu-button {
+    font-size: 1.5rem;
+    color: #333;
+  }
+  
+/* 🔹 Fix Sign-Out Button Alignment */
+.sign-out-button {
+    font-size: 1.5rem;
+    color: red;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px; /* Ensure spacing from the right */
+  }
+  
+  
+  /* 🔹 Side Menu */
+  .side-menu {
+    position: fixed;
+    top: 0;
+    left: -250px;
+    width: 250px;
+    height: 100vh;
+    background: white;
+    box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
+    padding-top: 60px;
+    transition: left 0.3s ease-in-out;
+  }
+  
+  .side-menu.open {
+    left: 0;
+  }
+  
+  .side-menu ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .side-menu li {
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    color: #333;
+  }
+  
+  .side-menu li.active {
+    font-weight: bold;
+    color: green;
+  }
+  
 .title {
     font-weight: bold;
     color: #388e3c;
