@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Container, Typography, IconButton, CircularProgress } from "@mui/material";
-import { FaCamera, FaBars, FaHome, FaHistory, FaRecycle, FaMapMarkerAlt, FaSignOutAlt } from "react-icons/fa";
+import { FaCamera, FaBars, FaHome, FaHistory, FaRecycle, FaMapMarkerAlt, FaSignOutAlt, FaRedo } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
 import "./Dashboard.css"; // External CSS for styling
@@ -103,6 +103,11 @@ const Dashboard = () => {
       console.error("Error signing out:", error);
     }
   };
+  const retakeImage = () => {
+    setCapturedImage(null);
+    startCamera(); // Restart the camera
+  };
+  
 
   return (
     <Container className="dashboard">
@@ -116,16 +121,25 @@ const Dashboard = () => {
           <FaSignOutAlt />
         </IconButton>
       </div>
-
-      {/* Camera View */}
+      
       <div className="camera-container">
-        {capturedImage ? (
-          <img src={capturedImage} alt="Captured" className="captured-image" />
-        ) : (
-          <video ref={videoRef} autoPlay playsInline className="camera-view" />
-        )}
-        <canvas ref={canvasRef} style={{ display: "none" }} />
+  {capturedImage ? (
+    <>
+      <img src={capturedImage} alt="Captured" className="captured-image" />
+      <div className="retake-container">
+        <IconButton className="retake-button" onClick={retakeImage}>
+          <FaRedo />
+        </IconButton>
       </div>
+    </>
+  ) : (
+    <video ref={videoRef} autoPlay playsInline className="camera-view" />
+  )}
+  <canvas ref={canvasRef} style={{ display: "none" }} />
+</div>
+
+
+
 
       {/* Capture Button */}
       <div className="capture-container">
@@ -148,10 +162,10 @@ const Dashboard = () => {
       {/* Floating Menu */}
       <div className={`side-menu ${menuOpen ? "open" : ""}`}>
         <ul>
-          <li onClick={() => setMenuOpen(false)}><FaHome /> Home</li>
+          <li onClick={() => setMenuOpen(false)}><FaHome /> Scanner</li>
           <li onClick={() => setMenuOpen(false)}><FaRecycle /> Recycle Guide</li>
           <li onClick={() => setMenuOpen(false)}><FaMapMarkerAlt /> NGO Locator</li>
-          <li onClick={() => setMenuOpen(false)}><FaHistory /> History</li>
+          <li onClick={() => { setMenuOpen(false); navigate("/history"); }}> <FaHistory /> History </li>
           <li onClick={handleSignOut}><FaSignOutAlt /> Sign Out</li>
         </ul>
       </div>
