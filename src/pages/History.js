@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Container, Typography, IconButton, Button } from "@mui/material";
-import { FaBars, FaHome, FaHistory, FaRecycle, FaMapMarkerAlt, FaSignOutAlt } from "react-icons/fa";
+import { FaBars, FaFileInvoice, FaHistory, FaRecycle, FaCamera, FaSignOutAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
 import { db } from "../firebase";
@@ -103,10 +103,9 @@ const History = () => {
       {/* ✅ Floating Menu */}
       <div className={`side-menu ${menuOpen ? "open" : ""}`}>
         <ul>
-          <li onClick={() => { setMenuOpen(false); navigate("/dashboard"); }}> <FaHome /> Scanner </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/dashboard"); }}> <FaCamera /> Scanner </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/bill-scanner"); }}> <FaFileInvoice /> Bill Scanner </li> {/* ✅ Added */}
           <li onClick={() => { setMenuOpen(false); navigate("/history"); }}> <FaHistory /> History </li>
-          <li onClick={() => { setMenuOpen(false); navigate("/recycle"); }}> <FaRecycle /> Recycle Guide </li>
-          <li onClick={() => { setMenuOpen(false); navigate("/ngo-locator"); }}> <FaMapMarkerAlt /> Recycle Centres </li>
           <li onClick={handleSignOut}> <FaSignOutAlt /> Sign Out </li>
         </ul>
       </div>

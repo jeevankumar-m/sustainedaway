@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Container, Typography, IconButton, CircularProgress } from "@mui/material";
-import { FaCamera, FaBars, FaHome, FaHistory, FaRecycle, FaMapMarkerAlt, FaSignOutAlt, FaRedo } from "react-icons/fa";
+import {FaBars, FaHome, FaHistory, FaFileInvoice, FaCamera, FaSignOutAlt, FaRedo } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
 import { db } from "../firebase"; // Ensure Firestore is initialized
@@ -195,10 +195,9 @@ const Dashboard = () => {
       {/* Floating Menu */}
       <div className={`side-menu ${menuOpen ? "open" : ""}`}>
         <ul>
-          <li onClick={() => navigate("/")}> <FaHome /> Scanner </li>
+          <li onClick={() => navigate("/")}> <FaCamera /> Scanner </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/bill-scanner"); }}> <FaFileInvoice /> Bill Scanner </li> {/* ✅ Added */}
           <li onClick={() => navigate("/history")}> <FaHistory /> History </li>
-          <li onClick={() => { setMenuOpen(false); navigate("/recycle"); }}> <FaRecycle /> Recycle Guide </li>
-          <li onClick={() => { setMenuOpen(false); navigate("/ngo-locator"); }}> <FaMapMarkerAlt />Recycle Centres</li>
           <li onClick={handleSignOut}><FaSignOutAlt /> Sign Out</li>
         </ul>
       </div>
