@@ -32,13 +32,13 @@ const Dashboard = () => {
       }
     } catch (error) {
       console.error("Error accessing camera:", error);
-      setResponseText("Camera access denied.");
+      setResponseText("⚠️ Camera access denied.");
     }
   };
 
   const stopCamera = () => {
     if (stream) {
-      stream.getTracks().forEach(track => track.stop());
+      stream.getTracks().forEach((track) => track.stop());
     }
   };
 
@@ -78,16 +78,16 @@ const Dashboard = () => {
       } else {
         console.log("Keys in Response:", Object.keys(data));
 
-        setResponseText(
-          `📦 Product: ${data["Product Name"]}<br />` +
-          `🏭 Brand: ${data.Brand}<br />` +
-          `⚠️ Ingredients Impact: ${data["Ingredients Impact"]}<br />` +
-          `♻️ Packaging Material: ${data["Packaging Material"]}<br />` +
-          `🌍 Carbon Footprint: ${data["Carbon Footprint"]}<br />` +
-          `🔄 Recycling Feasibility: ${data["Recycling Feasibility"]}<br />` +
-          `🌱 Alternative Options: ${data["Alternative Options"]}<br />` +
-          `⭐ Sustainability Rating: ${data["Sustainability Rating"]}/5`
-        );
+        setResponseText(`
+          📦 Product: ${data["Product Name"] || "Unknown"}<br />
+          🏭 Brand: ${data.Brand || "Unknown"}<br />
+          ⚠️ Ingredients Impact: ${data["Ingredients Impact"] || "N/A"}<br />
+          ♻️ Packaging Material: ${data["Packaging Material"] || "N/A"}<br />
+          🌍 Carbon Footprint: ${data["Carbon Footprint"] || "N/A"}<br />
+          🔄 Recycling Feasibility: ${data["Recycling Feasibility"] || "N/A"}<br />
+          🌱 Alternative Options: ${data["Alternative Options"] || "None"}<br />
+          ⭐ Sustainability Rating: ${data["Sustainability Rating"] || "N/A"}/5
+        `);
 
         // 🔹 Save to Firestore
         saveHistoryToFirestore(data);
@@ -111,12 +111,17 @@ const Dashboard = () => {
 
     try {
       await addDoc(collection(db, "history"), {
-        userId: user.uid, // 🔹 Associate with logged-in user
+        userId: user.uid, 
         productName: aiResponse["Product Name"] || "Unknown Product",
-        brand: aiResponse.Brand || "Unknown Brand",
+        brand: aiResponse["Brand"] || "Unknown Brand",
         sustainabilityScore: aiResponse["Sustainability Rating"] || "N/A",
-        dateScanned: serverTimestamp(), // 🔹 Store scan date
-      });
+        alternativeOptions: aiResponse["Alternative Options"],
+        carbonFootprint: aiResponse["Carbon Footprint"], // ✅ Fix applied here
+        ingredientsImpact: aiResponse["Ingredients Impact"],
+        packagingMaterial: aiResponse["Packaging Material"],
+        recyclingFeasibility: aiResponse["Recycling Feasibility"],
+        dateScanned: serverTimestamp(),
+      });      
 
       console.log("✅ History saved successfully!");
     } catch (error) {
@@ -145,7 +150,7 @@ const Dashboard = () => {
         <IconButton onClick={() => setMenuOpen(!menuOpen)} className="menu-button">
           <FaBars />
         </IconButton>
-        <Typography variant="h5" className="title">📷 Sustainedaway Scanner </Typography>
+        <Typography variant="h5" className="title">📷 Sustainaway Scanner </Typography>
         <IconButton className="sign-out-button" onClick={handleSignOut}>
           <FaSignOutAlt />
         </IconButton>
@@ -178,7 +183,7 @@ const Dashboard = () => {
       {responseText && (
         <div className="response-box">
           <Typography variant="h6">🧠 AI Response:</Typography>
-          <p dangerouslySetInnerHTML={{ __html: responseText.replace(/\n/g, "<br>") }} />
+          <p dangerouslySetInnerHTML={{ __html: responseText }} />
         </div>
       )}
 
@@ -188,10 +193,10 @@ const Dashboard = () => {
       {/* Floating Menu */}
       <div className={`side-menu ${menuOpen ? "open" : ""}`}>
         <ul>
-          <li onClick={() => setMenuOpen(false)}><FaHome /> Scanner</li>
-          <li onClick={() => setMenuOpen(false)}><FaRecycle /> Recycle Guide</li>
-          <li onClick={() => setMenuOpen(false)}><FaMapMarkerAlt /> NGO Locator</li>
-          <li onClick={() => { setMenuOpen(false); navigate("/history"); }}> <FaHistory /> History </li>
+          <li onClick={() => navigate("/")}> <FaHome /> Scanner </li>
+          <li onClick={() => navigate("/history")}> <FaHistory /> History </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/recycle"); }}> <FaRecycle /> Recycle Guide </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/ngo-locator"); }}> <FaMapMarkerAlt /> NGO Locator </li>
           <li onClick={handleSignOut}><FaSignOutAlt /> Sign Out</li>
         </ul>
       </div>
