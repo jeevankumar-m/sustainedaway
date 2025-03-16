@@ -1,11 +1,3 @@
-const admin = require("firebase-admin");
-const serviceAccount = require("./serviceAccountKey.json");
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
-
-const db = admin.firestore();
 const express = require("express");
 const cors = require("cors");
 const { spawn } = require("child_process");
@@ -39,7 +31,7 @@ app.post("/api/process-bill", async (req, res) => {
       console.error("❌ Error from Python:", data.toString());
     });
 
-    python.on("close", async (code) => {
+    python.on("close", (code) => {
       console.log("✅ Processed Bill Result:", result);
 
       try {
@@ -49,20 +41,13 @@ app.post("/api/process-bill", async (req, res) => {
           throw new Error("Invalid response format.");
         }
 
-        // 🔥 Store processed data in Firestore (bills collection)
-        const docRef = await db.collection("bills").add(jsonResponse);
-        console.log(`📌 Data saved to Firestore with ID: ${docRef.id}`);
-
         fs.unlinkSync(imagePath); // Clean up the temporary image file
-
-        res.json({ id: docRef.id, ...jsonResponse });
-
+        res.json(jsonResponse);
       } catch (error) {
         console.error("⚠️ JSON Parsing Error:", error.message);
         res.status(500).json({ error: "Invalid JSON response from AI." });
       }
     });
-
   } catch (error) {
     console.error("⚠️ File Write Error:", error.message);
     res.status(500).json({ error: "Failed to save the image." });
