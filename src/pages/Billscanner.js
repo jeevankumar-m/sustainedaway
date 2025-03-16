@@ -4,6 +4,7 @@ import { FaBars, FaHome, FaHistory, FaFileInvoice, FaCamera, FaSignOutAlt, FaRed
 import { useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
 import "./Dashboard.css";
+import "./Billscanner.css"
 
 const BillScanner = () => {
   const [capturedImage, setCapturedImage] = useState(null);
@@ -98,12 +99,12 @@ const BillScanner = () => {
   };
 
   return (
-    <Container className="dashboard">
+    <Container className="bill-scanner">
       <div className="top-bar">
         <IconButton onClick={() => setMenuOpen(!menuOpen)} className="menu-button">
           <FaBars />
         </IconButton>
-        <Typography variant="h5" className="title">📄 Bill Scanner</Typography>
+        <Typography variant="h5" className="title">📄 Bill Scanner - Scan You Bills To Know</Typography>
         <IconButton className="sign-out-button" onClick={handleSignOut}>
           <FaSignOutAlt />
         </IconButton>
@@ -132,9 +133,7 @@ const BillScanner = () => {
       </div>
 
       {responseData && responseData.products && (
-        <div className="response-container">
-          <Typography variant="h6" className="response-title">🧠 AI Analysis:</Typography>
-
+        <div className="product-list">
           {responseData.products.map((product, index) => (
             <Card key={index} className="product-card">
               <CardContent>
@@ -149,14 +148,6 @@ const BillScanner = () => {
               </CardContent>
             </Card>
           ))}
-
-          <Card className="overall-score-card">
-            <CardContent>
-              <Typography variant="h6">🌍 Overall Sustainability Score:</Typography>
-              <Typography variant="h4" color="primary">{responseData["Overall Sustainability Score"]}</Typography>
-              <Typography variant="body1"><strong>🔎 Recommendations:</strong> {responseData.Recommendations || "N/A"}</Typography>
-            </CardContent>
-          </Card>
         </div>
       )}
 
