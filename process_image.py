@@ -13,7 +13,7 @@ def process_image(image_path):
         # Call Gemini AI with a structured response prompt
         model = genai.GenerativeModel("gemini-2.0-flash")
         response = model.generate_content([
-            """Analyze the product in the image and provide the sustainability rating.
+            """Analyze the product in the image and provide the sustainability rating. Give Recycling Tips Worth 10 lines, just try to avoid giving the product up to recycling centres and help the user make the best out of it themselves, even if it exceeds 10 lines it is alright
             
             ⚠️ **IMPORTANT:** Return **ONLY** a valid JSON object. No extra text, no explanations.  
             
@@ -28,6 +28,7 @@ def process_image(image_path):
                 "Recycling Feasibility": "string",
                 "Alternative Options": "string",
                 "Sustainability Rating": float
+                "Recycling Tips": "string",
             }
             ```
             Remember: **NO extra text, just pure JSON.**

@@ -108,6 +108,7 @@ const Dashboard = () => {
       console.log("🚫 User not logged in, skipping history save.");
       return;
     }
+    console.log("AI Response:", aiResponse);
 
     try {
       await addDoc(collection(db, "history"), {
@@ -120,6 +121,7 @@ const Dashboard = () => {
         ingredientsImpact: aiResponse["Ingredients Impact"],
         packagingMaterial: aiResponse["Packaging Material"],
         recyclingFeasibility: aiResponse["Recycling Feasibility"],
+        recyclingtips: aiResponse["Recycling Tips"] || "No Tips Available",
         dateScanned: serverTimestamp(),
       });      
 
@@ -196,7 +198,7 @@ const Dashboard = () => {
           <li onClick={() => navigate("/")}> <FaHome /> Scanner </li>
           <li onClick={() => navigate("/history")}> <FaHistory /> History </li>
           <li onClick={() => { setMenuOpen(false); navigate("/recycle"); }}> <FaRecycle /> Recycle Guide </li>
-          <li onClick={() => { setMenuOpen(false); navigate("/ngo-locator"); }}> <FaMapMarkerAlt /> NGO Locator </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/ngo-locator"); }}> <FaMapMarkerAlt />Recycle Centres</li>
           <li onClick={handleSignOut}><FaSignOutAlt /> Sign Out</li>
         </ul>
       </div>
