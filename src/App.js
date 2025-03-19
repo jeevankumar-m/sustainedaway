@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-d
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import History from "./pages/History";
-import BillScanner from "./pages/Billscanner"; // ✅ Import Bill Scanner
+import BillScanner from "./pages/Billscanner"; 
+import StoreRatings from "./pages/StoreRatings";
 import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -29,9 +30,11 @@ function App() {
         <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/" />} />
         <Route path="/history" element={user ? <History /> : <Navigate to="/" />} /> {/* ✅ Protect History */}
         <Route path="/bill-scanner" element={user ? <BillScanner /> : <Navigate to="/" />} /> {/* ✅ Add Bill Scanner */}
+        <Route path="/store-ratings" element={user ? <StoreRatings /> : <Navigate to="/" />} />
       </Routes>
     </Router>
   );
 }
 
 export default App;
+
