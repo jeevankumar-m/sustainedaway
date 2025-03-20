@@ -110,9 +110,14 @@ const StoreRatings = () => {
         iconSize: [38, 38],
       });
 
-      L.marker([lat, lng], { icon: markerIcon })
+      // Add marker with click event to redirect to Google Maps
+      const marker = L.marker([lat, lng], { icon: markerIcon })
         .addTo(map)
         .bindPopup(`<b>${storeName}</b><br>Average Rating: ${avgRating.toFixed(1)}⭐`);
+
+      marker.on("click", () => {
+        window.open(`https://www.google.com/maps?q=${lat},${lng}`, "_blank");
+      });
     });
   };
 
@@ -152,7 +157,7 @@ const StoreRatings = () => {
           <li onClick={() => { setMenuOpen(false); navigate("/dashboard"); }}> <FaCamera /> Scanner </li>
           <li onClick={() => { setMenuOpen(false); navigate("/bill-scanner"); }}> <FaFileInvoice /> Bill Scanner </li>
           <li onClick={() => { setMenuOpen(false); navigate("/store-ratings"); }}> <FaStore /> Store Ratings </li>
-          <li onClick={() => { setMenuOpen(false); navigate("/history"); }}> <FaHistory /> History </li>  {/* ✅ Added */}
+          <li onClick={() => { setMenuOpen(false); navigate("/history"); }}> <FaHistory /> History </li>
           <li className="logout" onClick={() => signOut(auth).then(() => navigate("/login"))}>
             <FaSignOutAlt /> Sign Out
           </li>
