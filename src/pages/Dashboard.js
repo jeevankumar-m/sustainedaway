@@ -1,11 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Container, Typography, IconButton, CircularProgress } from "@mui/material";
-import {FaBars, FaStore, FaHistory, FaFileInvoice, FaCamera, FaSignOutAlt, FaRedo } from "react-icons/fa";
+import { FaBars, FaStore, FaHistory, FaFileInvoice, FaCamera, FaSignOutAlt, FaRedo } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
 import { db } from "../firebase"; // Ensure Firestore is initialized
 import { collection, addDoc, serverTimestamp } from "firebase/firestore"; // Firestore imports
 import "./Dashboard.css"; // External CSS for styling
+
+// Cloudinary configuration
+const cloudinaryConfig = {
+  cloudName: 'dgfepyx8a', // Replace with your Cloudinary cloud name
+  uploadPreset: 'sustainedaway_preset' // Replace with your Cloudinary upload preset (optional)
+};
 
 const Dashboard = () => {
   const [capturedImage, setCapturedImage] = useState(null);
@@ -54,12 +60,39 @@ const Dashboard = () => {
 
     const dataUrl = canvas.toDataURL("image/jpeg");
     setCapturedImage(dataUrl);
-    processImage(dataUrl.split(",")[1]);
+    uploadImageToCloudinary(dataUrl);
 
     stopCamera(); // Stop camera after capturing
   };
 
-  const processImage = async (base64Image) => {
+  const uploadImageToCloudinary = async (dataUrl) => {
+    const formData = new FormData();
+    formData.append('file', dataUrl);
+    formData.append('upload_preset', cloudinaryConfig.uploadPreset); // Optional
+
+    try {
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+      const data = await response.json();
+      console.log("Cloudinary Upload Response:", data); // Log Cloudinary response
+      if (data.secure_url) {
+        processImage(dataUrl.split(",")[1], data.secure_url); // Pass Cloudinary URL to processImage
+      } else {
+        console.error("Cloudinary URL not found in response:", data);
+        setResponseText("⚠️ Failed to upload image to Cloudinary.");
+      }
+    } catch (error) {
+      console.error("Error uploading image to Cloudinary:", error);
+      setResponseText("⚠️ Failed to upload image to Cloudinary.");
+    }
+  };
+
+  const processImage = async (base64Image, imageUrl) => {
     setProcessing(true);
     setResponseText("");
 
@@ -76,8 +109,6 @@ const Dashboard = () => {
       if (data.error) {
         setResponseText(`⚠️ Error: ${data.error}`);
       } else {
-        console.log("Keys in Response:", Object.keys(data));
-
         setResponseText(`
           📦 Product: ${data["Product Name"] || "Unknown"}<br />
           🏭 Brand: ${data.Brand || "Unknown"}<br />
@@ -89,8 +120,8 @@ const Dashboard = () => {
           ⭐ Sustainability Rating: ${data["Sustainability Rating"] || "N/A"}/5
         `);
 
-        // 🔹 Save to Firestore
-        saveHistoryToFirestore(data);
+        // Save to Firestore with Cloudinary URL
+        saveHistoryToFirestore(data, imageUrl);
       }
     } catch (error) {
       console.error("❌ Error processing image:", error);
@@ -100,32 +131,31 @@ const Dashboard = () => {
     }
   };
 
-  // 🔹 Function to Save Scan Data in Firestore
-  const saveHistoryToFirestore = async (aiResponse) => {
+  const saveHistoryToFirestore = async (aiResponse, imageUrl) => {
     const user = auth.currentUser; // Get logged-in user
 
     if (!user) {
       console.log("🚫 User not logged in, skipping history save.");
       return;
     }
-    console.log("AI Response:", aiResponse);
 
     try {
-      await addDoc(collection(db, "history"), {
-        userId: user.uid, 
+      const docRef = await addDoc(collection(db, "history"), {
+        userId: user.uid,
         productName: aiResponse["Product Name"] || "Unknown Product",
         brand: aiResponse["Brand"] || "Unknown Brand",
         sustainabilityScore: aiResponse["Sustainability Rating"] || "N/A",
         alternativeOptions: aiResponse["Alternative Options"],
-        carbonFootprint: aiResponse["Carbon Footprint"], // ✅ Fix applied here
+        carbonFootprint: aiResponse["Carbon Footprint"],
         ingredientsImpact: aiResponse["Ingredients Impact"],
         packagingMaterial: aiResponse["Packaging Material"],
         recyclingFeasibility: aiResponse["Recycling Feasibility"],
         recyclingtips: aiResponse["Recycling Tips"] || "No Tips Available",
+        imageUrl: imageUrl, // Cloudinary URL
         dateScanned: serverTimestamp(),
-      });      
+      });
 
-      console.log("✅ History saved successfully!");
+      console.log("✅ History saved successfully! Document ID:", docRef.id);
     } catch (error) {
       console.error("❌ Error saving history:", error);
     }
@@ -194,14 +224,13 @@ const Dashboard = () => {
 
       {/* Floating Menu */}
       <div className={`side-menu ${menuOpen ? "open" : ""}`}>
-      <ul>
-  <li onClick={() => { setMenuOpen(false); navigate("/dashboard"); }}> <FaCamera /> Scanner </li>
-  <li onClick={() => { setMenuOpen(false); navigate("/bill-scanner"); }}> <FaFileInvoice /> Bill Scanner </li>
-  <li onClick={() => { setMenuOpen(false); navigate("/store-ratings"); }}> <FaStore /> Store Ratings </li>
-  <li onClick={() => { setMenuOpen(false); navigate("/history"); }}> <FaHistory /> History </li>  {/* ✅ Added */}
-  <li onClick={handleSignOut}> <FaSignOutAlt /> Sign Out </li>
-</ul>
-
+        <ul>
+          <li onClick={() => { setMenuOpen(false); navigate("/dashboard"); }}> <FaCamera /> Scanner </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/bill-scanner"); }}> <FaFileInvoice /> Bill Scanner </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/store-ratings"); }}> <FaStore /> Store Ratings </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/history"); }}> <FaHistory /> History </li>
+          <li onClick={handleSignOut}> <FaSignOutAlt /> Sign Out </li>
+        </ul>
       </div>
     </Container>
   );
