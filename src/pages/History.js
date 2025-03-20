@@ -69,7 +69,14 @@ const History = () => {
         {history.length > 0 ? (
           history.map((item) => (
             <div key={item.id} className="history-card">
-              <h3>{item.productName || "Unknown Product"}</h3>
+              <h3 style={{ textAlign: "center" }}>{item.productName || "Unknown Product"}</h3>
+              {/* Display the image if available */}
+              {item.imageUrl && (
+                <div className="history-image-container">
+                  <img src={item.imageUrl} alt="Scanned Product" className="history-image" />
+                </div>
+              )}
+
               <p>🏢 <strong>Brand:</strong> {item.brand || "Not Available"}</p>
               <p>🌱 <strong>Sustainability Score:</strong> {item.sustainabilityScore ?? "N/A"}/5</p>
               <p>📦 <strong>Packaging:</strong> {item.packagingMaterial || "No details available"}</p>
@@ -104,7 +111,7 @@ const History = () => {
       <div className={`side-menu ${menuOpen ? "open" : ""}`}>
         <ul>
           <li onClick={() => { setMenuOpen(false); navigate("/dashboard"); }}> <FaCamera /> Scanner </li>
-          <li onClick={() => { setMenuOpen(false); navigate("/bill-scanner"); }}> <FaFileInvoice /> Bill Scanner </li> {/* ✅ Added */}
+          <li onClick={() => { setMenuOpen(false); navigate("/bill-scanner"); }}> <FaFileInvoice /> Bill Scanner </li>
           <li onClick={() => { setMenuOpen(false); navigate("/store-ratings"); }}> <FaStore /> Store Ratings </li>
           <li onClick={() => { setMenuOpen(false); navigate("/history"); }}> <FaHistory /> History </li>
           <li onClick={handleSignOut}> <FaSignOutAlt /> Sign Out </li>
