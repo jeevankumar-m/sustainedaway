@@ -97,7 +97,7 @@ const Dashboard = () => {
     setResponseText("");
 
     try {
-      const response = await fetch("sustainedaway-production.up.railway.app", {
+      const response = await fetch("https://sustainedaway-production.up.railway.app/api/process-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ base64Image }),
