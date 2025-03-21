@@ -1,11 +1,14 @@
 import "./Login.css";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
+  sendEmailVerification,
+  onAuthStateChanged,
+  signOut,
 } from "firebase/auth";
 import { auth } from "../firebase";
 import {
@@ -24,17 +27,39 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState(""); // Used only for registration
   const [error, setError] = useState("");
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
   const navigate = useNavigate(); // Hook for navigation
 
   const handleAuth = async () => {
     setError("");
     try {
       if (isRegistering) {
-        await createUserWithEmailAndPassword(auth, email, password);
+        // Register the user
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        
+        // Send email verification
+        await sendEmailVerification(userCredential.user);
+
+        // Sign the user out immediately after registration
+        await signOut(auth);
+
+        // Show a success message and switch back to the login form
+        setError("A verification email has been sent. Please verify your email before logging in.");
+        setIsRegistering(false); // Switch back to the login form
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        // Handle login
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        
+        // Check if the email is verified
+        if (!userCredential.user.emailVerified) {
+          setError("Please verify your email before logging in.");
+          await signOut(auth); // Sign out the user if email is not verified
+          return;
+        }
+
+        // Redirect to the dashboard if email is verified
+        navigate("/dashboard");
       }
-      navigate("/dashboard"); // Redirect after successful login
     } catch (err) {
       setError(err.message);
     }
@@ -45,18 +70,35 @@ const Login = () => {
     setError("");
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      const userCredential = await signInWithPopup(auth, provider);
+      if (!userCredential.user.emailVerified) {
+        setError("Please verify your email before logging in.");
+        await signOut(auth); // Sign out the user if email is not verified
+        return;
+      }
       navigate("/dashboard"); // Redirect after Google login
     } catch (err) {
       setError(err.message);
     }
   };
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsEmailVerified(user.emailVerified);
+      } else {
+        setIsEmailVerified(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   return (
     <Container maxWidth="xs" className="auth-container">
       <Card className="auth-card">
         <CardContent>
-        <div className="earth-emoji">🌍</div>
+          <div className="earth-emoji">🌍</div>
 
           <Typography variant="h4" className="auth-title">
             {isRegistering ? "Create an Account" : "Login"}
@@ -96,6 +138,10 @@ const Login = () => {
           />
 
           {error && <Typography color="error">{error}</Typography>}
+
+          {!isEmailVerified && !isRegistering && (
+            <Typography color="error">Please verify your email before logging in.</Typography>
+          )}
 
           <Button
             variant="contained"
