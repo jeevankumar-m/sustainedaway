@@ -98,12 +98,37 @@ const Login = () => {
     <Container maxWidth="xs" className="auth-container">
       <Card className="auth-card">
         <CardContent>
+          {/* Gradient Box for "Sustainedaway" */}
+          <Box
+            sx={{
+              background: "linear-gradient(45deg, #4CAF50, #2E7D32)",
+              padding: "16px",
+              borderRadius: "8px",
+              textAlign: "center",
+              marginBottom: "16px",
+            }}
+          >
+            <Typography
+              variant="h2"
+              sx={{
+                fontWeight: "bold",
+                color: "white",
+                fontSize: "2.5rem",
+              }}
+            >
+              Sustainedaway
+            </Typography>
+          </Box>
+
+          {/* Rotating Globe */}
           <div className="earth-emoji">🌍</div>
 
+          {/* Login/Register Title */}
           <Typography variant="h4" className="auth-title">
             {isRegistering ? "Create an Account" : "Login"}
           </Typography>
 
+          {/* Name Field (Only for Registration) */}
           {isRegistering && (
             <TextField
               fullWidth
@@ -116,6 +141,7 @@ const Login = () => {
             />
           )}
 
+          {/* Email Field */}
           <TextField
             fullWidth
             label="Email"
@@ -126,6 +152,8 @@ const Login = () => {
             onChange={(e) => setEmail(e.target.value)}
             className="auth-input"
           />
+
+          {/* Password Field */}
           <TextField
             fullWidth
             label="Password"
@@ -137,12 +165,15 @@ const Login = () => {
             className="auth-input"
           />
 
+          {/* Error Message */}
           {error && <Typography color="error">{error}</Typography>}
 
+          {/* Email Verification Message */}
           {!isEmailVerified && !isRegistering && (
             <Typography color="error">Please verify your email before logging in.</Typography>
           )}
 
+          {/* Login/Sign Up Button */}
           <Button
             variant="contained"
             fullWidth
@@ -153,6 +184,7 @@ const Login = () => {
             {isRegistering ? "Sign Up" : "Login"}
           </Button>
 
+          {/* Google Sign-In Button */}
           <Button
             variant="contained"
             color="error"
@@ -164,6 +196,7 @@ const Login = () => {
             Sign in with Google
           </Button>
 
+          {/* Toggle Between Login and Register */}
           <Box sx={{ mt: 2 }}>
             <Button
               variant="outlined"

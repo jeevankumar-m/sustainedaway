@@ -114,3 +114,50 @@ body {
     transform: translateY(0);
   }
 }
+
+/* Add this to Login.css if needed */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.auth-card {
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.earth-emoji {
+  font-size: 3rem;
+  text-align: center;
+  margin: 16px 0;
+  animation: spin 10s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.auth-title {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.auth-input {
+  margin-bottom: 16px;
+}
+
+.auth-button {
+  margin-top: 16px;
+}
+
+.toggle-button {
+  margin-top: 16px;
+}
