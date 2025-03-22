@@ -5,46 +5,31 @@ const SDGGoals = () => {
   const navigate = useNavigate();
   const [currentGoalIndex, setCurrentGoalIndex] = useState(0);
 
-  // List of SDG goals with their images and descriptions
   const sdgGoals = [
     {
-      id: 1,
-      title: "No Poverty",
-      image: "https://www.un.org/sustainabledevelopment/wp-content/uploads/2016/08/E_SDG-goals_icons-individual-rgb-01.png",
-      description: "End poverty in all its forms everywhere.",
-    },
-    {
-      id: 2,
-      title: "Zero Hunger",
-      image: "https://www.un.org/sustainabledevelopment/wp-content/uploads/2016/08/E_SDG-goals_icons-individual-rgb-02.png",
-      description: "End hunger, achieve food security and improved nutrition, and promote sustainable agriculture.",
-    },
-    {
       id: 3,
-      title: "Good Health and Well-being",
-      image: "https://www.un.org/sustainabledevelopment/wp-content/uploads/2016/08/E_SDG-goals_icons-individual-rgb-03.png",
-      description: "Ensure healthy lives and promote well-being for all at all ages.",
+      title: "Responsible Consumption and Production",
+      image: "https://res.cloudinary.com/dgfepyx8a/image/upload/v1742660989/zwlsgcjovdrsxou82yhq.jpg",
+      description: "Ensure sustainable consumption and production patterns.",
     },
     {
       id: 12,
-      title: "Responsible Consumption and Production",
-      image: "https://www.un.org/sustainabledevelopment/wp-content/uploads/2016/08/E_SDG-goals_icons-individual-rgb-12.png",
-      description: "Ensure sustainable consumption and production patterns.",
+      title: "Good Health and Well-being",
+      image: "https://res.cloudinary.com/dgfepyx8a/image/upload/v1742660879/y4zyzavzrhyciq0ukzq5.jpg",
+      description: "Ensure healthy lives and promote well-being for all at all ages.",
     },
     {
       id: 13,
       title: "Climate Action",
-      image: "https://www.un.org/sustainabledevelopment/wp-content/uploads/2016/08/E_SDG-goals_icons-individual-rgb-13.png",
+      image: "https://res.cloudinary.com/dgfepyx8a/image/upload/v1742661083/wsbcfpxpvzgxq7a6tu35.png",
       description: "Take urgent action to combat climate change and its impacts.",
     },
   ];
 
   const handleContinue = () => {
     if (currentGoalIndex < sdgGoals.length - 1) {
-      // Move to the next goal
       setCurrentGoalIndex(currentGoalIndex + 1);
     } else {
-      // Redirect to the dashboard after all goals are viewed
       navigate("/dashboard");
     }
   };
@@ -52,40 +37,109 @@ const SDGGoals = () => {
   const currentGoal = sdgGoals[currentGoalIndex];
 
   return (
-    <div style={{ textAlign: "center", padding: "20px", backgroundColor: "white" }}>
-      <h1>Sustainable Development Goals (SDGs) We Tackle</h1>
-      <p>
-        At Sustainedaway, we are committed to addressing the following SDGs through our platform:
-      </p>
-
-      {/* Display the current SDG goal */}
-      <div style={{ margin: "20px 0", backgroundColor: "white", padding: "20px", borderRadius: "8px" }}>
-        <img
-          src={currentGoal.image}
-          alt={`SDG ${currentGoal.id}: ${currentGoal.title}`}
-          style={{ width: "150px", height: "150px", backgroundColor: "white" }}
-        />
-        <h2>{`SDG ${currentGoal.id}: ${currentGoal.title}`}</h2>
-        <p>{currentGoal.description}</p>
+    <div style={styles.pageContainer}>
+      <div style={styles.phoneContainer}>
+        <h1 style={styles.title}>Sustainable Development Goals</h1>
+        <p style={styles.subtitle}>At Sustainedaway, we tackle the following SDGs:</p>
+        <div style={styles.problemStatement}>
+          <h2 style={styles.problemTitle}>The Problem We Solve</h2>
+          <p style={styles.problemText}>
+            Consumers struggle to make sustainable choices due to lack of information. Our app helps
+            by analyzing product sustainability and offering insights.
+          </p>
+        </div>
+        <div style={styles.goalContainer}>
+          <img src={currentGoal.image} alt={currentGoal.title} style={styles.goalImage} />
+          <h2 style={styles.goalTitle}>{`SDG ${currentGoal.id}: ${currentGoal.title}`}</h2>
+          <p style={styles.goalDescription}>{currentGoal.description}</p>
+        </div>
+        <button onClick={handleContinue} style={styles.continueButton}>
+          {currentGoalIndex < sdgGoals.length - 1 ? "Continue" : "Go to Dashboard"}
+        </button>
       </div>
-
-      {/* Continue Button */}
-      <button
-        onClick={handleContinue}
-        style={{
-          padding: "10px 20px",
-          fontSize: "16px",
-          backgroundColor: "#4CAF50",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-        }}
-      >
-        {currentGoalIndex < sdgGoals.length - 1 ? "Continue" : "Go to Dashboard"}
-      </button>
     </div>
   );
 };
 
 export default SDGGoals;
+
+const styles = {
+  pageContainer: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    height: "100vh",
+    backgroundColor: "white",
+  },
+  phoneContainer: {
+    width: "350px",
+    height: "90vh",
+    backgroundColor: "white",
+    borderRadius: "30px",
+    padding: "20px",
+    textAlign: "center",
+    boxShadow: "0 10px 20px rgba(0,0,0,0.2)",
+    overflowY: "auto",
+  },
+  title: {
+    fontSize: "1.5rem",
+    fontWeight: "bold",
+    color: "#2E7D32",
+  },
+  subtitle: {
+    fontSize: "1rem",
+    color: "#555",
+    marginBottom: "20px",
+  },
+  problemStatement: {
+    backgroundColor: "#f5f5f5",
+    padding: "15px",
+    borderRadius: "10px",
+    textAlign: "left",
+    fontSize: "0.9rem",
+    marginBottom: "20px",
+  },
+  problemTitle: {
+    fontSize: "1.2rem",
+    fontWeight: "600",
+    color: "#2E7D32",
+  },
+  problemText: {
+    fontSize: "0.9rem",
+    color: "#333",
+    lineHeight: "1.4",
+  },
+  goalContainer: {
+    backgroundColor: "white",
+    padding: "15px",
+    borderRadius: "15px",
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+  },
+  goalImage: {
+    width: "120px",
+    height: "120px",
+    borderRadius: "10px",
+    marginBottom: "15px",
+  },
+  goalTitle: {
+    fontSize: "1.2rem",
+    fontWeight: "600",
+    color: "#2E7D32",
+  },
+  goalDescription: {
+    fontSize: "0.9rem",
+    color: "#555",
+    lineHeight: "1.4",
+  },
+  continueButton: {
+    marginTop: "20px",
+    padding: "10px 15px",
+    fontSize: "1rem",
+    backgroundColor: "#4CAF50",
+    color: "white",
+    border: "none",
+    borderRadius: "20px",
+    cursor: "pointer",
+    transition: "background-color 0.3s ease, transform 0.2s ease",
+  },
+};
