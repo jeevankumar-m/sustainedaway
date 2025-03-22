@@ -4,7 +4,7 @@ import { FaBars, FaStore, FaHistory, FaFileInvoice, FaCamera, FaSignOutAlt, FaRe
 import { useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
 import "./Dashboard.css";
-import "./Billscanner.css"
+import "./Billscanner.css";
 
 const BillScanner = () => {
   const [capturedImage, setCapturedImage] = useState(null);
@@ -24,7 +24,17 @@ const BillScanner = () => {
 
   const startCamera = async () => {
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      // Check if the device is mobile
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+      // Set constraints for the camera
+      const constraints = {
+        video: {
+          facingMode: isMobile ? { exact: "environment" } : "user", // Use rear camera on mobile, front camera otherwise
+        },
+      };
+
+      const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
         setStream(mediaStream);
@@ -104,7 +114,7 @@ const BillScanner = () => {
         <IconButton onClick={() => setMenuOpen(!menuOpen)} className="menu-button">
           <FaBars />
         </IconButton>
-        <Typography variant="h5" className="title">📄 Bill Scanner - Scan You Bills To Know</Typography>
+        <Typography variant="h5" className="title">📄 Bill Scanner - Scan Your Bills To Know</Typography>
         <IconButton className="sign-out-button" onClick={handleSignOut}>
           <FaSignOutAlt />
         </IconButton>
