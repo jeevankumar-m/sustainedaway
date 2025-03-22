@@ -1,0 +1,36 @@
+[33mad5319e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Test 3 for mobile optimisation
+[33m8fbc987[m Test 2 for mobile optimisation
+[33mce63a0e[m Test for mobile optimisation
+[33m63459f0[m Made the email verification better
+[33m87e13ff[m Added rear camera feature for bill scanner.js
+[33md5e57d9[m Added feature for mobile device detection for rear camera accessing
+[33m47c47f4[m Successfully deployed server2.js on render
+[33m7ad51a7[m Crap, forgot to delete the requirements.txt
+[33m0da70d9[m Finally made the server.js work on render
+[33md86d61e[m Try 4 for the server.js running on render hope it works
+[33m7c9528f[m Try 4 to host server.js
+[33m7a9f487[m Try 3 for running server.js on render
+[33m9fff99d[m changed the url for server.js second test
+[33m7a0203a[m Added railway url for running command node server.js
+[33mf04bb13[m Added requirements.txt file for server deployment
+[33m4cbf6dc[m Added a near perfect authentication for user security and also added the App name in the Login
+[33m12b7d0b[m Added user verification feature for authentication
+[33mfb38c34[m Added Directions feature through Google Maps
+[33m14c8f4b[m sucessfully integrate the cloudinary api feature
+[33m352cb51[m Added image uploading and storing URL in cloudinary successful, Needs work on fetching image in History.js
+[33m3055ce9[m Completed Making the Store Rating Feature Along with all the Routing, Floating Menu UI Etc.
+[33m94c0033[m Made some improvements in the location and added average system within 50m radius error accuracy
+[33m37b8482[m Added New Raw Feature for Mapping Crowdsourced Sustaiable Stores
+[33m4f97fed[m Bill Scanner Feature Completed
+[33m5da8dfd[m Made a bit beautiful, but still crappy looking bill scanning site
+[33m9a1626d[m Crappy version of Bill scanner, need to improvise on UI and also it crappily stores the data in firestore, which I never wanted
+[33m4fad17d[m Added Recycling Tips Section in the history page and fixed scroll issue
+[33md5c3803[m Fixed issue in persisting userID creation and History Feature
+[33me7c2c39[m Added the History Feature with only TEXT
+[33mce21ce9[m Added menu to the History Page
+[33m2033c07[m Added Routing to the History Page and Added Retake Button
+[33m7c77079[m Created the signout feature
+[33md4224a1[m Made the Response section Viewable
+[33me176e9c[m Made the UI look better
+[33m140af18[m Initial commit
+[33mbd3f52a[m Initial commit
