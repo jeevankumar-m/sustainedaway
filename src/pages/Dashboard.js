@@ -44,6 +44,7 @@ const Dashboard = () => {
   const [stream, setStream] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const aiResponseRef = useRef(null); // Ref for AI response container
   const navigate = useNavigate();
   const auth = getAuth();
 
@@ -51,6 +52,13 @@ const Dashboard = () => {
     startCamera();
     return () => stopCamera(); // Stop camera on unmount
   }, []);
+
+  useEffect(() => {
+    // Scroll to the top of the AI response container when new data is displayed
+    if (aiResponseRef.current && responseText) {
+      aiResponseRef.current.scrollTop = 0;
+    }
+  }, [responseText]);
 
   const startCamera = async () => {
     try {
@@ -226,6 +234,7 @@ const Dashboard = () => {
         </IconButton>
       </div>
 
+      {/* Camera and Capture Button */}
       <div className="camera-container">
         {capturedImage ? (
           <>
@@ -251,7 +260,7 @@ const Dashboard = () => {
 
       {/* AI Response Box */}
       {responseText && (
-        <div className="response-box">
+        <div ref={aiResponseRef} className="response-box">
           {responseText}
         </div>
       )}
