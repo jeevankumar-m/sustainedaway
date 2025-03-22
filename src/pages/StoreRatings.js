@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { FaBars, FaStore, FaHistory, FaFileInvoice, FaCamera, FaSignOutAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import L from "leaflet";
@@ -17,6 +17,9 @@ const StoreRatings = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const auth = getAuth();
+
+  // Ref for the scrollable content
+  const scrollableContentRef = useRef(null);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -165,7 +168,7 @@ const StoreRatings = () => {
       </div>
 
       {/* 🔹 Map & Rating Box */}
-      <div className="content">
+      <div className="content" ref={scrollableContentRef}>
         <div id="map" className="map-container"></div>
 
         <div className="rating-box">

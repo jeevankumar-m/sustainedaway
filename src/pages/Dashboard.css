@@ -476,3 +476,30 @@ body, html {
   font-size: 1rem;
   color: #4a4a4a; /* Gray text */
 }
+
+/* Custom Scrollbar */
+.content {
+  overflow-y: auto; /* Enable vertical scrolling */
+  max-height: calc(100vh - 60px); /* Adjust height based on top bar */
+  scrollbar-width: thin; /* For Firefox */
+  scrollbar-color: #4CAF50 #f5f5f5; /* For Firefox */
+}
+
+/* Webkit Scrollbar */
+.content::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+
+.content::-webkit-scrollbar-track {
+  background: #f5f5f5; /* Track color */
+  border-radius: 10px; /* Rounded corners */
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: #4CAF50; /* Thumb color */
+  border-radius: 10px; /* Rounded corners */
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: #45a049; /* Thumb color on hover */
+}
