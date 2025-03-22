@@ -97,7 +97,7 @@ const Dashboard = () => {
     setResponseText("");
 
     try {
-      const response = await fetch("https://sustainedaway.onrender.com", {
+      const response = await fetch("https://sustainedaway-backend.onrender.com", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ base64Image }),
