@@ -165,9 +165,6 @@ const Login = () => {
           {/* Error Message */}
           {error && <Typography color="error">{error}</Typography>}
 
-          {/* Email Verification Message */}
-
-
           {/* Login/Sign Up Button */}
           <Button
             variant="contained"

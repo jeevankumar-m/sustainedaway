@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import History from "./pages/History";
 import BillScanner from "./pages/Billscanner"; 
 import StoreRatings from "./pages/StoreRatings";
+import SDGGoals from "./pages/SDGGoals";
 import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import Postregistration from "./pages/Postregistration";
@@ -33,6 +34,7 @@ function App() {
         <Route path="/bill-scanner" element={user ? <BillScanner /> : <Navigate to="/" />} /> {/* ✅ Add Bill Scanner */}
         <Route path="/store-ratings" element={user ? <StoreRatings /> : <Navigate to="/" />} />
         <Route path="/post-registration" element={user ? <Postregistration /> : <Navigate to="/" />} />
+        <Route path="/sdg-goals" element={user ? <SDGGoals /> : <Navigate to="/" />} />
       </Routes>
     </Router>
   );

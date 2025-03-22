@@ -28,10 +28,14 @@ const PostRegistration = () => {
   const handleContinue = async () => {
     try {
       await signOut(auth); // Sign out the user
-      navigate("/login"); // Redirect to the login page
+      navigate("/sdg-goals"); // Redirect to the SDGGoals page
     } catch (error) {
       console.error("Error signing out:", error);
     }
+  };
+
+  const handlesdgnav = async () => {
+      navigate("/sdg-goals"); // Redirect to the SDGGoals page
   };
 
   if (loading) {
@@ -57,22 +61,23 @@ const PostRegistration = () => {
             : "A verification link has been sent to your email. Please verify your email and refresh this page."}
         </Typography>
         {isEmailVerified && (
-  <Button
-    variant="contained"
-    size="large"
-    onClick={handleContinue}
-    sx={{
-      backgroundColor: "#4CAF50", // Green color
-      color: "white", // Text color
-      "&:hover": {
-        backgroundColor: "#45a049", // Darker green on hover
-      },
-    }}
-  >
-    Continue
-  </Button>
-)}
+          <Button
+            variant="contained"
+            size="large"
+            onClick={handlesdgnav}
+            sx={{
+              backgroundColor: "#4CAF50", // Green color
+              color: "white", // Text color
+              "&:hover": {
+                backgroundColor: "#45a049", // Darker green on hover
+              },
+            }}
+          >
+            Continue
+          </Button>
+        )}
       </Box>
+
     </Container>
   );
 };
