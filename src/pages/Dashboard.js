@@ -13,6 +13,29 @@ const cloudinaryConfig = {
   uploadPreset: 'sustainedaway_preset' // Replace with your Cloudinary upload preset (optional)
 };
 
+// Sustainability Meter Component
+const SustainabilityMeter = ({ rating }) => {
+  // Ensure the rating is between 1 and 5
+  const normalizedRating = Math.min(Math.max(rating, 1), 5);
+
+  // Calculate the width of the filled area (20% per point)
+  const width = (normalizedRating / 5) * 100;
+
+  return (
+    <div className="sustainability-meter">
+      <div className="meter-bar">
+        <div
+          className="meter-fill"
+          style={{ width: `${width}%`, backgroundColor: "#4CAF50" }} // Green color
+        ></div>
+      </div>
+      <Typography variant="body1" className="meter-text">
+        Sustainability Rating: {normalizedRating}/5
+      </Typography>
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const [capturedImage, setCapturedImage] = useState(null);
   const [processing, setProcessing] = useState(false);
@@ -119,16 +142,21 @@ const Dashboard = () => {
       if (data.error) {
         setResponseText(`⚠️ Error: ${data.error}`);
       } else {
-        setResponseText(`
-          📦 Product: ${data["Product Name"] || "Unknown"}<br />
-          🏭 Brand: ${data.Brand || "Unknown"}<br />
-          ⚠️ Ingredients Impact: ${data["Ingredients Impact"] || "N/A"}<br />
-          ♻️ Packaging Material: ${data["Packaging Material"] || "N/A"}<br />
-          🌍 Carbon Footprint: ${data["Carbon Footprint"] || "N/A"}<br />
-          🔄 Recycling Feasibility: ${data["Recycling Feasibility"] || "N/A"}<br />
-          🌱 Alternative Options: ${data["Alternative Options"] || "None"}<br />
-          ⭐ Sustainability Rating: ${data["Sustainability Rating"] || "N/A"}/5
-        `);
+        setResponseText(
+          <>
+            <Typography variant="h6">🧠 AI Response:</Typography>
+            <p>
+              📦 Product: {data["Product Name"] || "Unknown"}<br />
+              🏭 Brand: {data.Brand || "Unknown"}<br />
+              ⚠️ Ingredients Impact: {data["Ingredients Impact"] || "N/A"}<br />
+              ♻️ Packaging Material: {data["Packaging Material"] || "N/A"}<br />
+              🌍 Carbon Footprint: {data["Carbon Footprint"] || "N/A"}<br />
+              🔄 Recycling Feasibility: {data["Recycling Feasibility"] || "N/A"}<br />
+              🌱 Alternative Options: {data["Alternative Options"] || "None"}<br />
+            </p>
+            <SustainabilityMeter rating={parseFloat(data["Sustainability Rating"]) || 0} />
+          </>
+        );
 
         // Save to Firestore with Cloudinary URL
         saveHistoryToFirestore(data, imageUrl);
@@ -224,8 +252,7 @@ const Dashboard = () => {
       {/* AI Response Box */}
       {responseText && (
         <div className="response-box">
-          <Typography variant="h6">🧠 AI Response:</Typography>
-          <p dangerouslySetInnerHTML={{ __html: responseText }} />
+          {responseText}
         </div>
       )}
 
@@ -247,5 +274,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
-//Modded some stuff
