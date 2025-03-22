@@ -18,19 +18,27 @@ const SustainabilityMeter = ({ rating }) => {
   // Ensure the rating is between 1 and 5
   const normalizedRating = Math.min(Math.max(rating, 1), 5);
 
-  // Calculate the width of the filled area (20% per point)
-  const width = (normalizedRating / 5) * 100;
+  // Calculate the percentage for the gauge (0% to 100%)
+  const percentage = (normalizedRating / 5) * 100;
 
   return (
-    <div className="sustainability-meter">
-      <div className="meter-bar">
+    <div className="gauge-meter">
+      <div className="gauge">
         <div
-          className="meter-fill"
-          style={{ width: `${width}%`, backgroundColor: "#4CAF50" }} // Green color
+          className="gauge-fill"
+          style={{
+            transform: `rotate(${(percentage / 100) * 180}deg)`, // Rotate based on percentage
+          }}
         ></div>
+        <div className="gauge-cover"></div>
+        <div className="gauge-text">
+          <Typography variant="body1" className="meter-text">
+            {normalizedRating}/5
+          </Typography>
+        </div>
       </div>
-      <Typography variant="body1" className="meter-text">
-        Sustainability Rating: {normalizedRating}/5
+      <Typography variant="body1" className="meter-label">
+        Sustainability Rating
       </Typography>
     </div>
   );
