@@ -40,12 +40,8 @@ const Login = () => {
         // Send email verification
         await sendEmailVerification(userCredential.user);
 
-        // Sign the user out immediately after registration
-        await signOut(auth);
-
-        // Show a success message and switch back to the login form
-        setError("A verification email has been sent. Please verify your email before logging in.");
-        setIsRegistering(false); // Switch back to the login form
+        // Redirect to the PostRegistration page
+        navigate("/post-registration");
       } else {
         // Handle login
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -82,6 +78,7 @@ const Login = () => {
     }
   };
 
+  // Check if the user's email is verified
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -169,9 +166,7 @@ const Login = () => {
           {error && <Typography color="error">{error}</Typography>}
 
           {/* Email Verification Message */}
-          {!isEmailVerified && !isRegistering && (
-            <Typography color="error">Please verify your email before logging in.</Typography>
-          )}
+
 
           {/* Login/Sign Up Button */}
           <Button

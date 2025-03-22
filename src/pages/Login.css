@@ -161,3 +161,33 @@ body {
 .toggle-button {
   margin-top: 16px;
 }
+
+.post-registration-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #d4edda, #81c784); /* Light green gradient */
+}
+
+.post-registration-container .MuiButton-contained {
+  background-color: #2E7D32; /* Green color for the button */
+  color: white;
+  font-weight: bold;
+  padding: 10px 20px;
+  transition: background-color 0.3s ease;
+}
+
+.post-registration-container .MuiButton-contained:hover {
+  background-color: #1B5E20; /* Darker green on hover */
+}
+
+.post-registration-container .MuiTypography-h4 {
+  font-family: "SF Pro", "Inter", sans-serif;
+  color: #2E7D32; /* Green color for the heading */
+}
+
+.post-registration-container .MuiTypography-body1 {
+  font-family: "SF Pro", "Inter", sans-serif;
+  color: #333; /* Dark gray for the body text */
+}
