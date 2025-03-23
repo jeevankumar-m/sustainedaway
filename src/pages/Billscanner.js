@@ -155,6 +155,7 @@ const BillScanner = () => {
                 <Typography><strong>🔄 Recycling Feasibility:</strong> {product["Recycling Feasibility"] || "N/A"}</Typography>
                 <Typography><strong>✅ Alternative Options:</strong> {product["Alternative Options"] || "N/A"}</Typography>
                 <Typography><strong>🌎 Sustainability Rating:</strong> {product["Sustainability Rating"] || "N/A"}</Typography>
+                <Typography><strong>❤️ Health Impact:</strong> {product["Health Impact"] || "N/A"}</Typography> {/* New field */}
               </CardContent>
             </Card>
           ))}

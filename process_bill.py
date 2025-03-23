@@ -13,7 +13,7 @@ def process_bill(image_path):
         # Call Gemini AI with a structured response prompt
         model = genai.GenerativeModel("gemini-2.0-flash")
         response = model.generate_content([
-            """Extract all product details from the bill image and analyze their sustainability.  
+            """Extract all product details from the bill image and analyze their sustainability and health impact.  
 
             ⚠️ **IMPORTANT:** Return **ONLY** a valid JSON object. No extra text, no explanations.
 
@@ -29,7 +29,8 @@ def process_bill(image_path):
                         "Carbon Footprint": "string",
                         "Recycling Feasibility": "string",
                         "Alternative Options": "string",
-                        "Sustainability Rating": float
+                        "Sustainability Rating": float,
+                        "Health Impact": "string"  # New field
                     }
                 ],
                 "Overall Sustainability Score": float,
@@ -37,7 +38,7 @@ def process_bill(image_path):
             }
             ```
 
-            Ensure accurate product extraction from the receipt and provide sustainability insights.
+            Ensure accurate product extraction from the receipt and provide sustainability and health insights. 
 
             Remember: **NO extra text, just pure JSON.**
             """,
