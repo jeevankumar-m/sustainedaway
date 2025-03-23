@@ -24,13 +24,10 @@ const BillScanner = () => {
 
   const startCamera = async () => {
     try {
-      // Check if the device is mobile
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-      // Set constraints for the camera
       const constraints = {
         video: {
-          facingMode: isMobile ? { exact: "environment" } : "user", // Use rear camera on mobile, front camera otherwise
+          facingMode: isMobile ? { exact: "environment" } : "user",
         },
       };
 
@@ -84,7 +81,8 @@ const BillScanner = () => {
       if (data.error) {
         setResponseData({ error: `⚠️ Error: ${data.error}` });
       } else {
-        setResponseData(data);
+        // Ensure the response is treated as an array
+        setResponseData({ products: Array.isArray(data) ? data : [data] });
       }
     } catch (error) {
       console.error("❌ Error processing image:", error);
@@ -142,7 +140,7 @@ const BillScanner = () => {
         </IconButton>
       </div>
 
-      {responseData && responseData.products && (
+      {responseData && responseData.products && responseData.products.length > 0 ? (
         <div className="product-list">
           {responseData.products.map((product, index) => (
             <Card key={index} className="product-card">
@@ -155,11 +153,15 @@ const BillScanner = () => {
                 <Typography><strong>🔄 Recycling Feasibility:</strong> {product["Recycling Feasibility"] || "N/A"}</Typography>
                 <Typography><strong>✅ Alternative Options:</strong> {product["Alternative Options"] || "N/A"}</Typography>
                 <Typography><strong>🌎 Sustainability Rating:</strong> {product["Sustainability Rating"] || "N/A"}</Typography>
-                <Typography><strong>❤️ Health Impact:</strong> {product["Health Impact"] || "N/A"}</Typography> {/* New field */}
+                <Typography><strong>❤️ Health Impact:</strong> {product["Health Impact"] || "N/A"}</Typography>
               </CardContent>
             </Card>
           ))}
         </div>
+      ) : (
+        <Typography variant="body1" className="error-message">
+          {responseData?.error || "No products found."}
+        </Typography>
       )}
 
       {processing && <CircularProgress className="loading-spinner" />}
