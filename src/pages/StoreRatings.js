@@ -3,6 +3,7 @@ import { FaBars, FaStore, FaHistory, FaFileInvoice, FaCamera, FaSignOutAlt } fro
 import { useNavigate } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet.heat"; // Import the heatmap plugin
 import { db } from "../firebase";
 import { collection, getDocs, addDoc } from "firebase/firestore";
 import { getAuth, signOut } from "firebase/auth";
@@ -102,6 +103,7 @@ const StoreRatings = () => {
     });
 
     // Calculate averages & add markers
+    const heatmapData = [];
     Object.values(storeGroups).forEach(({ storeName, lat, lng, ratings }) => {
       const avgRating = ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
       const markerColor = avgRating >= 4 ? "green" : "red";
@@ -121,7 +123,24 @@ const StoreRatings = () => {
       marker.on("click", () => {
         window.open(`https://www.google.com/maps?q=${lat},${lng}`, "_blank");
       });
+
+      // Add data to heatmap
+      heatmapData.push([lat, lng, avgRating]);
     });
+
+    // Add heatmap layer
+    if (heatmapData.length > 0) {
+      L.heatLayer(heatmapData, {
+        radius: 25, // Adjust the radius of the heatmap points
+        blur: 15, // Adjust the blur of the heatmap points
+        maxZoom: 17,
+        gradient: {
+          0.4: "blue", // Low sustainability
+          0.6: "lime", // Medium sustainability
+          1: "red", // High sustainability
+        },
+      }).addTo(map);
+    }
   };
 
   // ⭐ Submit a new rating

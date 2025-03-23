@@ -13,12 +13,14 @@ def process_image(image_path):
         # Call Gemini AI with a structured response prompt
         model = genai.GenerativeModel("gemini-2.0-flash")
         response = model.generate_content([
-            """Analyze the product in the image and provide the sustainability rating. Give Recycling Tips Worth 10 lines, just try to avoid giving the product up to recycling centres and help the user make the best out of it themselves, even if it exceeds 10 lines it is alright
-            
+            """Analyze the product in the image and provide the sustainability rating out of 5.
+            Give Recycling Tips Worth 10 lines, just try to avoid giving the product up 
+            to recycling centers and help the user make the best out of it themselves.
+
             ⚠️ **IMPORTANT:** Return **ONLY** a valid JSON object. No extra text, no explanations.  
-            
+
             JSON format:
-            ```
+            ```json
             {
                 "Product Name": "string",
                 "Brand": "string",
@@ -27,12 +29,11 @@ def process_image(image_path):
                 "Carbon Footprint": "string",
                 "Recycling Feasibility": "string",
                 "Alternative Options": "string",
-                "Sustainability Rating": float, 
-                "Health Impact": "string",
-                "Recycling Tips": "string", 
+                "Sustainability Rating": float,
+                "Recycling Tips": "string"
             }
             ```
-            Remember: **NO extra text, just pure JSON.**
+            **ONLY return JSON, no extra text!**
             """,
             image
         ])
@@ -41,7 +42,7 @@ def process_image(image_path):
         if response and hasattr(response, 'text'):
             try:
                 # Extract JSON part and return clean data
-                json_str = response.text.strip("```json").strip("```")  # Remove Markdown formatting
+                json_str = response.text.strip("```json").strip("```").strip()
                 structured_data = json.loads(json_str)  # Convert to JSON
                 print(json.dumps(structured_data))  # ✅ Proper JSON Output
             except json.JSONDecodeError:
