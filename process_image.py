@@ -27,8 +27,9 @@ def process_image(image_path):
                 "Carbon Footprint": "string",
                 "Recycling Feasibility": "string",
                 "Alternative Options": "string",
-                "Sustainability Rating": float
-                "Recycling Tips": "string",
+                "Sustainability Rating": float, 
+                "Health Impact": "string",
+                "Recycling Tips": "string", 
             }
             ```
             Remember: **NO extra text, just pure JSON.**

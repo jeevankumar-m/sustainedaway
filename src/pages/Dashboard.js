@@ -146,7 +146,7 @@ const Dashboard = () => {
     setResponseText("");
 
     try {
-      const response = await fetch("https://sustainedaway-backend.onrender.com/api/process-image", {
+      const response = await fetch("https://sustainedaway-backend.onrender.com/process-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ base64Image }),
@@ -169,6 +169,8 @@ const Dashboard = () => {
               🌍 Carbon Footprint: {data["Carbon Footprint"] || "N/A"}<br />
               🔄 Recycling Feasibility: {data["Recycling Feasibility"] || "N/A"}<br />
               🌱 Alternative Options: {data["Alternative Options"] || "None"}<br />
+              ❤️ Health Impact: {data["Health Impact"] || "None"}<br />
+
             </p>
             <SustainabilityMeter rating={parseFloat(data["Sustainability Rating"]) || 0} />
           </>
@@ -205,6 +207,7 @@ const Dashboard = () => {
         packagingMaterial: aiResponse["Packaging Material"],
         recyclingFeasibility: aiResponse["Recycling Feasibility"],
         recyclingtips: aiResponse["Recycling Tips"] || "No Tips Available",
+        healthimpact: aiResponse["Health Impact"] || "N/A", 
         imageUrl: imageUrl, // Cloudinary URL
         dateScanned: serverTimestamp(),
       });

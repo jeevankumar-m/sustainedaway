@@ -82,6 +82,7 @@ const History = () => {
               <p>📦 <strong>Packaging:</strong> {item.packagingMaterial || "No details available"}</p>
               <p>🧪 <strong>Ingredients:</strong> {item.ingredientsImpact || "Not listed"}</p>
               <p>♻ <strong>Recycling Feasibility:</strong> {item.recyclingFeasibility || "Not listed"}</p>
+              <p>❤️ <strong>Health Impact:</strong> {item.healthimpact || "Not listed"}</p>
               <p>📅 <strong>Scanned on:</strong> {item.dateScanned ? item.dateScanned.toDate().toLocaleString() : "Date not available"}</p>
 
               {/* ✅ Recycling Tips Button */}
