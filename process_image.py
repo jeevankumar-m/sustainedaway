@@ -30,7 +30,8 @@ def process_image(image_path):
                 "Recycling Feasibility": "string",
                 "Alternative Options": "string",
                 "Sustainability Rating": float,
-                "Recycling Tips": "string"
+                "Recycling Tips": "string", 
+                "Health Impact": "string",
             }
             ```
             **ONLY return JSON, no extra text!**

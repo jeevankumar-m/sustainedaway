@@ -8,15 +8,15 @@ const SDGGoals = () => {
   const sdgGoals = [
     {
       id: 3,
-      title: "Responsible Consumption and Production",
-      image: "https://res.cloudinary.com/dgfepyx8a/image/upload/v1742660989/zwlsgcjovdrsxou82yhq.jpg",
-      description: "Ensure sustainable consumption and production patterns.",
-    },
-    {
-      id: 12,
       title: "Good Health and Well-being",
       image: "https://res.cloudinary.com/dgfepyx8a/image/upload/v1742660879/y4zyzavzrhyciq0ukzq5.jpg",
       description: "Ensure healthy lives and promote well-being for all at all ages.",
+    },
+    {
+      id: 12,
+      title: "Responsible Consumption and Production",
+      image: "https://res.cloudinary.com/dgfepyx8a/image/upload/v1742660989/zwlsgcjovdrsxou82yhq.jpg",
+      description: "Ensure sustainable consumption and production patterns.",
     },
     {
       id: 13,
