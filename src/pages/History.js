@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Container, Typography, IconButton, Button } from "@mui/material";
-import { FaBars, FaStore, FaFileInvoice, FaHistory, FaRecycle, FaCamera, FaSignOutAlt } from "react-icons/fa";
+import { FaBars, FaStore, FaFileInvoice, FaHistory, FaRecycle, FaCamera, FaSignOutAlt, FaComments } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
 import { db } from "../firebase";

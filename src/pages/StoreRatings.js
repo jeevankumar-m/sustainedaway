@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { FaBars, FaStore, FaHistory, FaFileInvoice, FaCamera, FaSignOutAlt } from "react-icons/fa";
+import { FaBars, FaStore, FaHistory, FaFileInvoice, FaCamera, FaSignOutAlt, FaComments } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
