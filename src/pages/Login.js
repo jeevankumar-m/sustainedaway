@@ -9,6 +9,7 @@ import {
   sendEmailVerification,
   onAuthStateChanged,
   signOut,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth } from "../firebase";
 import {
@@ -20,180 +21,251 @@ import {
   CardContent,
   Box,
 } from "@mui/material";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Login = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState(""); // Used only for registration
-  const [error, setError] = useState("");
+  const [name, setName] = useState("");
   const [isEmailVerified, setIsEmailVerified] = useState(false);
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate();
+
+  const showToast = (message, type) => {
+    toast.dismiss();
+    toast[type](message, {
+      position: "top-center",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
+      style: { backgroundColor: "#4CAF50", color: "#fff" },
+    });
+  };
 
   const handleAuth = async () => {
-    setError("");
     try {
       if (isRegistering) {
-        // Register the user
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        
-        // Send email verification
         await sendEmailVerification(userCredential.user);
-
-        // Redirect to the PostRegistration page
+        showToast("Verification email sent! Check your inbox.", "success");
         navigate("/post-registration");
       } else {
-        // Handle login
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        
-        // Check if the email is verified
         if (!userCredential.user.emailVerified) {
-          setError("Please verify your email before logging in.");
-          await signOut(auth); // Sign out the user if email is not verified
+          showToast("Please verify your email before logging in.", "error");
+          await signOut(auth);
           return;
         }
-
-        // Redirect to the dashboard if email is verified
+        showToast("Login successful!", "success");
         navigate("/dashboard");
       }
     } catch (err) {
-      setError(err.message);
+      if (err.code === "auth/invalid-email") {
+        showToast("Invalid email format.", "error");
+      } else if (err.code === "auth/user-not-found") {
+        showToast("No account found with this email.", "error");
+      } else if (err.code === "auth/wrong-password") {
+        showToast("Incorrect password.", "error");
+      } else {
+        showToast(err.message, "error");
+      }
     }
   };
 
-  // Handle Google Sign-In
   const handleGoogleSignIn = async () => {
-    setError("");
-    const provider = new GoogleAuthProvider();
     try {
+      const provider = new GoogleAuthProvider();
       const userCredential = await signInWithPopup(auth, provider);
       if (!userCredential.user.emailVerified) {
-        setError("Please verify your email before logging in.");
-        await signOut(auth); // Sign out the user if email is not verified
+        showToast("Please verify your email before logging in.", "error");
+        await signOut(auth);
         return;
       }
-      navigate("/dashboard"); // Redirect after Google login
+      showToast("Login successful!", "success");
+      navigate("/dashboard");
     } catch (err) {
-      setError(err.message);
+      showToast(err.message, "error");
     }
   };
 
-  // Check if the user's email is verified
+  const handleForgotPassword = async () => {
+    if (!email) {
+      showToast("Please enter your email to reset password.", "error");
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showToast("Password reset email sent. Check your inbox.", "success");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setIsEmailVerified(user.emailVerified);
-      } else {
-        setIsEmailVerified(false);
-      }
+      setIsEmailVerified(user ? user.emailVerified : false);
     });
-
     return () => unsubscribe();
   }, []);
 
   return (
     <Container maxWidth="xs" className="auth-container">
+      <ToastContainer />
       <Card className="auth-card">
         <CardContent>
-          {/* Gradient Box for "Sustainedaway" */}
-          <Box
-            sx={{
-              background: "linear-gradient(45deg, #4CAF50, #2E7D32)",
-              padding: "16px",
-              borderRadius: "8px",
-              textAlign: "center",
-              marginBottom: "16px",
-            }}
-          >
-            <Typography
-              variant="h2"
-              sx={{
-                fontWeight: "bold",
-                color: "white",
-                fontSize: "2.5rem",
-              }}
-            >
+          <Box sx={{
+            background: "linear-gradient(45deg, #4CAF50, #2E7D32)",
+            padding: "16px",
+            borderRadius: "8px",
+            textAlign: "center",
+            marginBottom: "16px",
+          }}>
+            <Typography variant="h2" sx={{ fontWeight: "bold", color: "white", fontSize: "2.5rem" }}>
               Sustainedaway
             </Typography>
           </Box>
 
-          {/* Rotating Globe */}
           <div className="earth-emoji">🌍</div>
 
-          {/* Login/Register Title */}
           <Typography variant="h4" className="auth-title">
             {isRegistering ? "Create an Account" : "Login"}
           </Typography>
 
-          {/* Name Field (Only for Registration) */}
           {isRegistering && (
-            <TextField
-              fullWidth
-              label="Name"
-              variant="outlined"
-              margin="dense"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="auth-input"
+            <TextField 
+              fullWidth 
+              label="Name" 
+              variant="outlined" 
+              margin="dense" 
+              value={name} 
+              onChange={(e) => setName(e.target.value)} 
+              placeholder="John Doe"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  '&:hover fieldset': {
+                    borderColor: '#4CAF50',
+                    boxShadow: '0 0 0 2px rgba(76, 175, 80, 0.2)'
+                  },
+                },
+              }}
             />
           )}
 
-          {/* Email Field */}
-          <TextField
-            fullWidth
-            label="Email"
-            variant="outlined"
-            margin="dense"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="auth-input"
+          <TextField 
+            fullWidth 
+            label="Email" 
+            variant="outlined" 
+            margin="dense" 
+            type="email" 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+            placeholder="example@gmail.com"
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                '&:hover fieldset': {
+                  borderColor: '#4CAF50',
+                  boxShadow: '0 0 0 2px rgba(76, 175, 80, 0.2)'
+                },
+              },
+            }}
           />
 
-          {/* Password Field */}
-          <TextField
-            fullWidth
-            label="Password"
-            variant="outlined"
-            margin="dense"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="auth-input"
+          <TextField 
+            fullWidth 
+            label="Password" 
+            variant="outlined" 
+            margin="dense" 
+            type="password" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+            placeholder="••••••••"
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                '&:hover fieldset': {
+                  borderColor: '#4CAF50',
+                  boxShadow: '0 0 0 2px rgba(76, 175, 80, 0.2)'
+                },
+              },
+            }}
           />
 
-          {/* Error Message */}
-          {error && <Typography color="error">{error}</Typography>}
+          {!isRegistering && (
+            <Button 
+              onClick={handleForgotPassword} 
+              sx={{ 
+                mt: 1,
+                color: '#56ab2f',
+                textTransform: 'none',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  color: '#2b580c',
+                  backgroundColor: 'transparent',
+                  textDecoration: 'underline',
+                  boxShadow: '0 2px 4px rgba(86, 171, 47, 0.3)',
+                  transform: 'translateY(-1px)'
+                }
+              }}
+            >
+              Forgot Password?
+            </Button>
+          )}
 
-          {/* Login/Sign Up Button */}
-          <Button
-            variant="contained"
-            fullWidth
-            sx={{ mt: 2 }}
-            className="auth-button"
+          <Button 
+            variant="contained" 
+            fullWidth 
+            sx={{ 
+              mt: 2,
+              backgroundColor: '#4CAF50',
+              '&:hover': {
+                backgroundColor: '#3e8e41',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+              },
+              transition: 'all 0.3s ease'
+            }} 
             onClick={handleAuth}
           >
             {isRegistering ? "Sign Up" : "Login"}
           </Button>
 
-          {/* Google Sign-In Button */}
-          <Button
-            variant="contained"
-            color="error"
-            fullWidth
-            sx={{ mt: 2 }}
-            className="auth-button"
+          <Button 
+            variant="contained" 
+            fullWidth 
+            sx={{ 
+              mt: 2,
+              backgroundColor: '#DB4437',
+              '&:hover': {
+                backgroundColor: '#c1351d',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+              },
+              transition: 'all 0.3s ease'
+            }} 
             onClick={handleGoogleSignIn}
           >
             Sign in with Google
           </Button>
 
-          {/* Toggle Between Login and Register */}
           <Box sx={{ mt: 2 }}>
-            <Button
-              variant="outlined"
-              fullWidth
-              className="toggle-button"
+            <Button 
+              variant="outlined" 
+              fullWidth 
+              sx={{
+                color: '#4CAF50',
+                borderColor: '#4CAF50',
+                '&:hover': {
+                  backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                  borderColor: '#3e8e41',
+                  color: '#3e8e41',
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                },
+                transition: 'all 0.3s ease'
+              }}
               onClick={() => setIsRegistering(!isRegistering)}
             >
               {isRegistering ? "Already have an account? Login" : "Don't have an account? Register"}

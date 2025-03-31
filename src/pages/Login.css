@@ -1,13 +1,8 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap");
-
-@font-face {
-  font-family: "SF Pro";
-  src: url("https://fonts.cdnfonts.com/s/94600/SFPRODISPLAYREGULAR.woff") format("woff");
-}
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap");
 
 body {
   background: linear-gradient(135deg, #d4edda, #81c784); /* Light to deep green */
-  font-family: "SF Pro", "Inter", sans-serif;
+  font-family: "Poppins", sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -103,6 +98,17 @@ body {
   background-color: #c8e6c9 !important;
 }
 
+/* Forgot Password */
+.forgot-password {
+  color: #4CAF50 !important;
+  text-decoration: none;
+}
+
+.forgot-password:hover {
+  color: #4CAF50 !important;
+  text-decoration: none;
+}
+
 /* Animations */
 @keyframes fadeIn {
   from {
@@ -115,63 +121,17 @@ body {
   }
 }
 
-/* Add this to Login.css if needed */
-.auth-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-.auth-card {
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.earth-emoji {
-  font-size: 3rem;
-  text-align: center;
-  margin: 16px 0;
-  animation: spin 10s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.auth-title {
-  text-align: center;
-  margin-bottom: 16px;
-}
-
-.auth-input {
-  margin-bottom: 16px;
-}
-
-.auth-button {
-  margin-top: 16px;
-}
-
-.toggle-button {
-  margin-top: 16px;
-}
-
+/* Post-registration container */
 .post-registration-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: linear-gradient(135deg, #d4edda, #81c784); /* Light green gradient */
+  background: linear-gradient(135deg, #d4edda, #81c784);
 }
 
 .post-registration-container .MuiButton-contained {
-  background-color: #2E7D32; /* Green color for the button */
+  background-color: #2E7D32;
   color: white;
   font-weight: bold;
   padding: 10px 20px;
@@ -179,15 +139,15 @@ body {
 }
 
 .post-registration-container .MuiButton-contained:hover {
-  background-color: #1B5E20; /* Darker green on hover */
+  background-color: #1B5E20;
 }
 
 .post-registration-container .MuiTypography-h4 {
-  font-family: "SF Pro", "Inter", sans-serif;
-  color: #2E7D32; /* Green color for the heading */
+  font-family: "Poppins", sans-serif;
+  color: #2E7D32;
 }
 
 .post-registration-container .MuiTypography-body1 {
-  font-family: "SF Pro", "Inter", sans-serif;
-  color: #333; /* Dark gray for the body text */
+  font-family: "Poppins", sans-serif;
+  color: #333;
 }
