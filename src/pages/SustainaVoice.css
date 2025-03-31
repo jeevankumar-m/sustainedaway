@@ -1,0 +1,147 @@
+.top-bar {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background-color: white;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 28px;
+    z-index: 100;
+  }
+  
+  .menu-button {
+    margin-right: 15px;
+    /* Keep menu button on left (default flex behavior) */
+  }
+  
+  .title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-weight: 600;
+    color: #2c3e50;
+    /* Center the title absolutely */
+  }
+  
+  /* The rest of your CSS remains unchanged */
+  .voice-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    margin-top: 60px;
+  }
+  
+  .menu-backdrop {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+  }
+  
+  .side-menu {
+    position: fixed;
+    top: 60px;
+    left: -250px;
+    width: 250px;
+    height: calc(100% - 60px);
+    background-color: white;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    z-index: 1001;
+    transition: left 0.3s ease;
+    overflow-y: auto;
+  }
+
+.side-menu.open {
+  left: 0;
+}
+
+.side-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.side-menu li {
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.side-menu li:hover {
+  background-color: #f5f5f5;
+}
+
+.side-menu li svg {
+  margin-right: 10px;
+  color: #2c3e50;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .voice-content {
+    padding: 10px;
+    margin-top: 60px;
+  }
+  
+  .side-menu {
+    width: 200px;
+  }
+}
+
+/* Add these to your existing SustainaVoice.css */
+
+/* Form elements rounded corners */
+.MuiOutlinedInput-root {
+    border-radius: 8px !important;
+  }
+  
+  .MuiButton-root {
+    border-radius: 8px !important;
+  }
+  
+  .MuiSelect-select {
+    border-radius: 8px !important;
+  }
+  
+  /* Image preview styling */
+  .image-preview {
+    margin-top: 10px;
+    border-radius: 8px;
+    overflow: hidden;
+    max-height: 150px;
+  }
+  
+  /* File upload button styling */
+  .file-upload-button {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px dashed #ccc;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  
+  .file-upload-button:hover {
+    border-color: #4CAF50;
+    background-color: rgba(76, 175, 80, 0.05);
+  }
+  
+  /* Success message styling */
+  .success-message {
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 15px;
+    background-color: rgba(46, 125, 50, 0.1);
+  }

@@ -114,6 +114,7 @@ const History = () => {
           <li onClick={() => { setMenuOpen(false); navigate("/dashboard"); }}> <FaCamera /> Scanner </li>
           <li onClick={() => { setMenuOpen(false); navigate("/bill-scanner"); }}> <FaFileInvoice /> Bill Scanner </li>
           <li onClick={() => { setMenuOpen(false); navigate("/store-ratings"); }}> <FaStore /> Store Ratings </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/sustainavoice"); }}> <FaComments /> SustainaVoice </li>
           <li onClick={() => { setMenuOpen(false); navigate("/history"); }}> <FaHistory /> History </li>
           <li onClick={handleSignOut}> <FaSignOutAlt /> Sign Out </li>
         </ul>
