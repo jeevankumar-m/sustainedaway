@@ -143,11 +143,30 @@ const SustainaVoiceTest = () => {
       await setDoc(docRef, feedbackData);
       
       // 2. Post to Twitter with compressed image
-      const tweetText = `New Sustainability feedback from Sustainedaway User\n"${
-        feedback.substring(0, 200)
-      }"...\n#SustainableProducts #EcoFeedback`;
+      const generateHashtags = () => {
+        const baseTags = ['SustainableProducts', 'EcoFeedback'];
+        
+        // Add conditional hashtags based on feedback type
+        switch(feedbackType) {
+          case 'complaint':
+            baseTags.push('EcoConcern');
+            break;
+          case 'suggestion':
+            baseTags.push('GreenInnovation');
+            break;
+          case 'review':
+            baseTags.push('EcoReview');
+            break;
+          default:
+            baseTags.push('SustainableLiving');
+        }
+        return baseTags.map(tag => `#${tag}`).join(' ');
+      };
       
-      await postTweet(tweetText, compressedImage); // Send compressed image  - just check and remove if needed
+      const tweetText = `New feedback from @Sustainedaway user:\n\n"${
+        feedback.substring(0, 180)
+      }"\n\n${generateHashtags()}`;
+  
       const result = await postTweet(tweetText, compressedImage);
       setTweetUrl(result.tweetUrl); // Store the URL
       // 3. Show success
@@ -156,7 +175,6 @@ const SustainaVoiceTest = () => {
       setFeedback("");
       setCharacterCount(0);
       setProductImage(null);
-    
       
     } catch (err) {
       console.error("Submission error:", err);
