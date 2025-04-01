@@ -13,6 +13,7 @@ import { auth, db } from "../firebase"; // Your Firebase config
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import "./SustainaVoice.css";
 import { postTweet } from '../twitterservice';
+import Confetti from 'react-confetti';
 
 const SustainaVoiceTest = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -355,6 +356,14 @@ const SustainaVoiceTest = () => {
               <span style={{ marginRight: '8px' }}>✓</span>
               Thank you for your feedback!
             </Typography>
+          )}
+          {isSuccess && (
+            <>
+              <Confetti width={window.innerWidth} height={window.innerHeight} recycle={false} />
+              <Typography variant="body1" color="success.main" sx={{ mt: 2 }}>
+                ✅ Feedback shared successfully on Twitter!
+              </Typography>
+            </>
           )}
         </Box>
       </div>
