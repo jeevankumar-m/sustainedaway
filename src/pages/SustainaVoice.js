@@ -156,8 +156,7 @@ const SustainaVoiceTest = () => {
       setFeedback("");
       setCharacterCount(0);
       setProductImage(null);
-      
-      setTimeout(() => setIsSuccess(false), 3000);
+    
       
     } catch (err) {
       console.error("Submission error:", err);
@@ -359,7 +358,7 @@ const SustainaVoiceTest = () => {
               variant="contained"
               color="primary"
               fullWidth
-              disabled={feedback.trim() === "" || characterCount > MAX_CHARACTERS || isSubmitting || !auth.currentUser}
+              disabled={feedback.trim() === "" || characterCount > MAX_CHARACTERS || isSubmitting || !auth.currentUser || isSuccess}
               startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <FaXTwitter />}
               sx={{ 
                 py: 1.5,
@@ -371,44 +370,66 @@ const SustainaVoiceTest = () => {
           </form>
 
           {isSuccess && (
-  <Box sx={{ mt: 2 }}>
+  <Box sx={{ 
+    mt: 2,
+    p: 2,
+    border: '1px solid #e0e0e0',
+    borderRadius: 2,
+    backgroundColor: 'rgba(46, 125, 50, 0.05)',
+    position: 'relative' // Added for absolute positioning of close button
+  }}>
+    {/* Close button in top-right corner */}
+    <IconButton
+      sx={{
+        position: 'absolute',
+        right: 8,
+        top: 8
+      }}
+      onClick={() => setIsSuccess(false)}
+    >
+      <FaTimes />
+    </IconButton>
+    
+    <Confetti 
+      width={window.innerWidth} 
+      height={window.innerHeight} 
+      recycle={false}
+      numberOfPieces={200}
+    />
+    
     <Typography 
       variant="body1" 
       color="success.main"
-      sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        borderRadius: '8px',
-        p: 1,
-        backgroundColor: 'rgba(46, 125, 50, 0.1)'
-      }}
+      sx={{ mb: 2 }}
     >
-      <span style={{ marginRight: '8px' }}>✓</span>
-      Thank you for your feedback!
+      ✓ Feedback shared successfully!
     </Typography>
-    
+
     {tweetUrl && (
       <Button
         variant="outlined"
         fullWidth
-        sx={{ mt: 2 }}
+        sx={{ mb: 2 }}
         onClick={() => window.open(tweetUrl, '_blank')}
         startIcon={<FaXTwitter />}
       >
         View Your Tweet
       </Button>
     )}
+
+    <Button
+      variant="contained"
+      fullWidth
+      onClick={() => {
+        setIsSuccess(false);
+        setTweetUrl(null);
+      }}
+      startIcon={<FaComments />}
+    >
+      Share Another Feedback
+    </Button>
   </Box>
 )}
-          {isSuccess && (
-            <>
-              <Confetti width={window.innerWidth} height={window.innerHeight} recycle={false} />
-              <Typography variant="body1" color="success.main" sx={{ mt: 2 }}>
-                ✅ Feedback shared successfully on Twitter!
-              </Typography>
-            </>
-          )}
         </Box>
       </div>
     </div>
