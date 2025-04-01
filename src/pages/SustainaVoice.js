@@ -91,6 +91,29 @@ const SustainaVoiceTest = () => {
   };
 
   // Handle form submission with Firebase
+  const compressImage = async (base64Str, quality = 0.7, maxWidth = 800) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = base64Str;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > maxWidth) {
+          height = (maxWidth / width) * height;
+          width = maxWidth;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+    });
+  };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (feedback.trim() === "" || !auth.currentUser) return;
@@ -100,24 +123,30 @@ const SustainaVoiceTest = () => {
     try {
       const user = auth.currentUser;
       
-      // 1. Save to Firestore
+      // Compress image if exists
+      let compressedImage = null;
+      if (productImage) {
+        compressedImage = await compressImage(productImage);
+      }
+  
+      // 1. Save original image to Firestore
       const feedbackData = {
         userId: user.uid,
         userEmail: user.email,
         feedbackType,
         feedback,
-        productImage,
+        productImage, // Store original image
         createdAt: serverTimestamp()
       };
       const docRef = doc(db, "sustainabilityFeedback", `${user.uid}-${Date.now()}`);
       await setDoc(docRef, feedbackData);
       
-      // 2. Post to Twitter via your proxy
+      // 2. Post to Twitter with compressed image
       const tweetText = `New sustainability feedback from ${user.email}:\n"${
         feedback.substring(0, 200)
       }"...\n#SustainableProducts #EcoFeedback`;
       
-      await postTweet(tweetText);
+      await postTweet(tweetText, compressedImage); // Send compressed image
       
       // 3. Show success
       setIsSubmitting(false);
@@ -131,7 +160,7 @@ const SustainaVoiceTest = () => {
     } catch (err) {
       console.error("Submission error:", err);
       setIsSubmitting(false);
-      // You can add state to show Twitter-specific errors if needed
+      alert("Feedback saved, but Twitter post failed: " + err.message);
     }
   };
 

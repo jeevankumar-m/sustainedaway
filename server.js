@@ -1,4 +1,6 @@
 require('dotenv').config();
+const FormData = require('form-data');
+const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
 const OAuth = require('oauth-1.0a');
@@ -26,51 +28,81 @@ const oauth = OAuth({
 });
 
 app.post('/api/tweet', async (req, res) => {
-  try {
-    const { text } = req.body;
-    console.log('Received tweet request:', text);
-    
-    const token = {
-      key: process.env.TWITTER_ACCESS_TOKEN,
-      secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
-    };
-
-    const url = 'https://api.twitter.com/2/tweets';
-    const authData = oauth.authorize({ url, method: 'POST' }, token);
-    console.log('Auth data:', authData);
-    
-    const authHeader = oauth.toHeader(authData);
-    console.log('Auth header:', authHeader);
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        ...authHeader,
-        'content-type': 'application/json',
-        'accept': 'application/json'
-      },
-      body: JSON.stringify({ text })
-    });
-
-    console.log('Twitter response status:', response.status);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Twitter API error details:', errorText);
-      throw new Error(`Twitter API error: ${response.statusText}`);
+    try {
+      const { text, imageData } = req.body;
+      
+      const token = {
+        key: process.env.TWITTER_ACCESS_TOKEN,
+        secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
+      };
+  
+      // Step 1: Upload media if image exists
+      let mediaId = null;
+      if (imageData) {
+        // Convert base64 to buffer
+        const buffer = Buffer.from(imageData.split(',')[1], 'base64');
+        
+        // Upload to Twitter
+        const mediaUrl = 'https://upload.twitter.com/1.1/media/upload.json';
+        const mediaAuthHeader = oauth.toHeader(oauth.authorize({
+          url: mediaUrl,
+          method: 'POST'
+        }, token));
+  
+        const formData = new FormData();
+        formData.append('media', buffer, { 
+          filename: 'feedback.jpg',
+          contentType: 'image/jpeg'
+        });
+  
+        const mediaResponse = await fetch(mediaUrl, {
+          method: 'POST',
+          headers: {
+            ...mediaAuthHeader,
+            ...formData.getHeaders()
+          },
+          body: formData
+        });
+  
+        const mediaData = await mediaResponse.json();
+        mediaId = mediaData.media_id_string;
+      }
+  
+      // Step 2: Post tweet with media
+      const url = 'https://api.twitter.com/2/tweets';
+      const authHeader = oauth.toHeader(oauth.authorize({
+        url,
+        method: 'POST'
+      }, token));
+  
+      const tweetData = {
+        text: text
+      };
+  
+      if (mediaId) {
+        tweetData.media = { media_ids: [mediaId] };
+      }
+  
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          ...authHeader,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify(tweetData)
+      });
+  
+      const data = await response.json();
+      res.json({ success: true, data });
+      
+    } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ 
+        success: false,
+        error: error.message || 'Failed to post tweet'
+      });
     }
-
-    const data = await response.json();
-    res.json({ success: true, data });
-  } catch (error) {
-    console.error('Full error:', error);
-    res.status(500).json({ 
-      success: false,
-      error: error.message || 'Failed to post tweet',
-      details: error.response ? await error.response.text() : null
-    });
-  }
-});
+  });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
