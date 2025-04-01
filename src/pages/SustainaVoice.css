@@ -158,3 +158,29 @@
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
   }
+
+  /* Enable smooth free scrolling for the entire app */
+.sustaina-voice-container {
+  -webkit-overflow-scrolling: touch; /* For smooth scrolling on iOS */
+  overflow-y: auto; /* Enable vertical scrolling */
+  height: 100vh; /* Full viewport height */
+  overscroll-behavior-y: contain; /* Prevent overscroll glow/bounce */
+}
+
+/* For the main content area */
+.voice-content {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+/* For any scrollable containers (like side menu) */
+.side-menu {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Optional: Smooth scrolling behavior */
+html {
+  scroll-behavior: smooth;
+}

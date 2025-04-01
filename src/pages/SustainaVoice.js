@@ -26,6 +26,7 @@ const SustainaVoiceTest = () => {
   const [productImage, setProductImage] = useState(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [cameraError, setCameraError] = useState(null);
+  const [productName, setProductName] = useState("");
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
@@ -117,7 +118,7 @@ const SustainaVoiceTest = () => {
   
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (feedback.trim() === "" || !auth.currentUser) return;
+    if (feedback.trim() === "" || productName.trim() === "" || !auth.currentUser) return;
     
     setIsSubmitting(true);
     
@@ -134,11 +135,13 @@ const SustainaVoiceTest = () => {
       const feedbackData = {
         userId: user.uid,
         userEmail: user.email,
+        productName, // Add product name to stored data
         feedbackType,
         feedback,
-        productImage, // Store original image
+        productImage,
         createdAt: serverTimestamp()
       };
+
       const docRef = doc(db, "sustainabilityFeedback", `${user.uid}-${Date.now()}`);
       await setDoc(docRef, feedbackData);
       
@@ -162,8 +165,8 @@ const SustainaVoiceTest = () => {
         }
         return baseTags.map(tag => `#${tag}`).join(' ');
       };
-      
-      const tweetText = `New feedback from @Sustainedaway user:\n\n"${
+
+      const tweetText = `Feedback about ${productName || "a product"} from @Sustainedaway user:\n\n"${
         feedback.substring(0, 180)
       }"\n\n${generateHashtags()}`;
   
@@ -173,6 +176,7 @@ const SustainaVoiceTest = () => {
       setIsSubmitting(false);
       setIsSuccess(true);
       setFeedback("");
+      setProductName("");
       setCharacterCount(0);
       setProductImage(null);
       
@@ -277,18 +281,41 @@ const SustainaVoiceTest = () => {
                   </IconButton>
                 </Box>
               ) : (
-                <Button 
-                  variant="outlined" 
-                  fullWidth
-                  onClick={startCamera}
-                  sx={{ 
-                    borderRadius: '8px',
-                    py: 1.5,
-                    mb: 1
-                  }}
-                >
-                  Capture Product Photo
-                </Button>
+              <Button 
+                variant="outlined"
+                fullWidth
+                onClick={startCamera}
+                sx={{
+                  borderRadius: '8px',
+                  py: 1.5,
+                  mb: 1,
+                  // Default state (black X theme)
+                  color: 'white',
+                  backgroundColor: 'black',
+                  borderColor: 'black',
+                  // Smooth transition for all animatable properties
+                  transition: 'all 0.3s ease-in-out',
+                  // Hover state
+                  '&:hover': {
+                    backgroundColor: '#111', // Slightly lighter black
+                    borderColor: '#1d9bf0',  // Twitter's blue accent
+                    boxShadow: '0 2px 8px rgba(29, 155, 240, 0.3)', // Subtle glow
+                    transform: 'translateY(-1px)' // Slight lift effect
+                  },
+                  // Active/pressed state
+                  '&:active': {
+                    backgroundColor: '#222',
+                    transform: 'translateY(0)'
+                  },
+                  // Focus state for accessibility
+                  '&:focus-visible': {
+                    outline: '2px solid #1d9bf0',
+                    outlineOffset: '2px'
+                  }
+                }}
+              >
+                Capture Product Photo
+              </Button>
               )}
             </Box>
 
@@ -324,6 +351,23 @@ const SustainaVoiceTest = () => {
                 </Button>
               </DialogActions>
             </Dialog>
+
+            {/* Add this above your feedback type dropdown */}
+                        <TextField
+              label="Product Name"
+              fullWidth
+              variant="outlined"
+              value={productName}
+              onChange={(e) => setProductName(e.target.value)}
+              placeholder="e.g. Bamboo Toothbrush or Recycled Notebook"
+              sx={{ 
+                mb: 2,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '8px',
+                },
+              }}
+              required
+            />
 
             {/* ... (keep your existing feedback type dropdown and text field) */}
             <FormControl fullWidth sx={{ mb: 2, borderRadius: '8px' }}>
@@ -372,19 +416,44 @@ const SustainaVoiceTest = () => {
             
 
             <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              fullWidth
-              disabled={feedback.trim() === "" || characterCount > MAX_CHARACTERS || isSubmitting || !auth.currentUser || isSuccess}
-              startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <FaXTwitter />}
-              sx={{ 
-                py: 1.5,
-                borderRadius: '8px'
-              }}
-            >
-              {isSubmitting ? 'Submitting...' : 'Share Feedback'}
-            </Button>
+  type="submit"
+  variant="contained"
+  fullWidth
+  disabled={
+    feedback.trim() === "" || 
+    productName.trim() === "" || 
+    characterCount > MAX_CHARACTERS || 
+    isSubmitting || 
+    !auth.currentUser || 
+    isSuccess
+  }
+  startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <FaXTwitter />}
+  sx={{ 
+    py: 1.5,
+    borderRadius: '8px',
+    backgroundColor: '#000000', // X/Twitter black
+    color: '#FFFFFF', // White text
+    textTransform: 'none', // Prevents uppercase transformation (optional)
+    fontWeight: 'bold', // Makes text bolder (optional)
+    transition: 'all 0.3s ease', // Smooth transition for hover effects
+    '&:hover': {
+      backgroundColor: '#000000', // Keep black but add a slight darkening effect
+      opacity: 0.9, // Slightly transparent on hover
+      transform: 'translateY(-1px)', // Subtle lift effect
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', // Soft shadow on hover
+    },
+    '&:active': {
+      transform: 'translateY(0)', // Reset lift when clicked
+    },
+    '&:disabled': {
+      backgroundColor: '#E5E5E5',
+      color: '#A3A3A3',
+      cursor: 'not-allowed',
+    }
+  }}
+>
+  {isSubmitting ? 'Submitting...' : 'Share Feedback'}
+</Button>
           </form>
 
           {isSuccess && (
@@ -424,28 +493,69 @@ const SustainaVoiceTest = () => {
     </Typography>
 
     {tweetUrl && (
-      <Button
+            <Button
         variant="outlined"
         fullWidth
-        sx={{ mb: 2 }}
         onClick={() => window.open(tweetUrl, '_blank')}
         startIcon={<FaXTwitter />}
+        sx={{
+          mb: 2,
+          py: 1.5,
+          borderRadius: '8px',
+          borderColor: '#000000', // X/Twitter black border
+          color: '#000000', // Black text
+          backgroundColor: 'transparent',
+          textTransform: 'none', // Optional: prevents uppercase transformation
+          fontWeight: 'bold', // Optional: makes text bolder
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            backgroundColor: 'rgba(0, 0, 0, 0.05)', // Very light black on hover
+            borderColor: '#000000',
+            color: '#000000',
+            transform: 'translateY(-1px)',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+          },
+          '&:active': {
+            transform: 'translateY(0)'
+          }
+        }}
       >
         View Your Tweet
       </Button>
     )}
 
-    <Button
-      variant="contained"
-      fullWidth
-      onClick={() => {
-        setIsSuccess(false);
-        setTweetUrl(null);
-      }}
-      startIcon={<FaComments />}
-    >
-      Share Another Feedback
-    </Button>
+      <Button
+        variant="contained"
+        fullWidth
+        onClick={() => {
+          setIsSuccess(false);
+          setTweetUrl(null);
+        }}
+        startIcon={<FaComments />}
+        sx={{
+          py: 1.5,
+          borderRadius: '8px',
+          backgroundColor: '#000000', // X/Twitter black
+          color: '#FFFFFF', // White text
+          textTransform: 'none', // Prevents uppercase transformation
+          fontWeight: 'bold', // Makes text bolder
+          transition: 'all 0.3s ease', // Smooth transition
+          '&:hover': {
+            backgroundColor: '#000000', // Maintain black color
+            opacity: 0.9, // Slightly transparent on hover
+            transform: 'translateY(-1px)', // Subtle lift
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', // Soft shadow
+          },
+          '&:active': {
+            transform: 'translateY(0)', // Reset when clicked
+          },
+          '& .MuiButton-startIcon': { // Style for the icon
+            marginRight: '8px', // Adjust spacing between icon and text
+          }
+        }}
+      >
+        Share Another Feedback
+      </Button>
   </Box>
 )}
         </Box>
