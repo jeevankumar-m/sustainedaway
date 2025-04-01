@@ -14,6 +14,7 @@ import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import "./SustainaVoice.css";
 import { postTweet } from '../twitterservice';
 import Confetti from 'react-confetti';
+import { signOut } from "firebase/auth";
 
 const SustainaVoiceTest = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -69,6 +70,15 @@ const SustainaVoiceTest = () => {
       streamRef.current = null;
     }
     setCameraOpen(false);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      navigate("/"); // Redirect to login after sign out
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
   // Capture photo
@@ -165,8 +175,18 @@ const SustainaVoiceTest = () => {
         }
         return baseTags.map(tag => `#${tag}`).join(' ');
       };
-
-      const tweetText = `Feedback about ${productName || "a product"} from @Sustainedaway user:\n\n"${
+      
+      // Map feedback types to display-friendly names
+      const feedbackTypeLabels = {
+        complaint: 'Complaint',
+        suggestion: 'Suggestion', 
+        review: 'Review',
+        default: 'Feedback'
+      };
+      
+      const tweetText = `${
+        feedbackTypeLabels[feedbackType] || feedbackTypeLabels.default
+      } about ${productName || "a product"} from @Sustainedaway user:\n\n"${
         feedback.substring(0, 180)
       }"\n\n${generateHashtags()}`;
   
@@ -222,11 +242,16 @@ const SustainaVoiceTest = () => {
         <Typography variant="h5" className="title">💬 SustainaVoice</Typography>
       </div>
 
+{/* Floating Menu */}
       {/* Floating Menu */}
-      {menuOpen && <div className="menu-backdrop" onClick={() => setMenuOpen(false)}></div>}
       <div className={`side-menu ${menuOpen ? "open" : ""}`}>
         <ul>
-          {/* ... (keep your existing menu items) */}
+          <li onClick={() => { setMenuOpen(false); navigate("/dashboard"); }}> <FaCamera /> Scanner </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/bill-scanner"); }}> <FaFileInvoice /> Bill Scanner </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/store-ratings"); }}> <FaStore /> Store Ratings </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/sustainavoice"); }}> <FaComments /> SustainaVoice </li> 
+          <li onClick={() => { setMenuOpen(false); navigate("/history"); }}> <FaHistory /> History </li>
+          <li onClick={handleSignOut}> <FaSignOutAlt /> Sign Out </li>
         </ul>
       </div>
 
