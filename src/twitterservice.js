@@ -7,7 +7,7 @@ export async function postTweet(text, imageData = null) {
         },
         body: JSON.stringify({ 
           text,
-          imageData // Send base64 image data if exists
+          imageData
         })
       });
   
@@ -17,7 +17,7 @@ export async function postTweet(text, imageData = null) {
         throw new Error(result.error || 'Failed to post tweet');
       }
   
-      return result;
+      return result; // Now includes tweetUrl
     } catch (error) {
       console.error('Twitter service error:', error);
       throw error;

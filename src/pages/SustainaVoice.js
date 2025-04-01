@@ -19,6 +19,7 @@ const SustainaVoiceTest = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [feedbackType, setFeedbackType] = useState("review");
+  const [tweetUrl, setTweetUrl] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [characterCount, setCharacterCount] = useState(0);
@@ -142,12 +143,13 @@ const SustainaVoiceTest = () => {
       await setDoc(docRef, feedbackData);
       
       // 2. Post to Twitter with compressed image
-      const tweetText = `New sustainability feedback from ${user.email}:\n"${
+      const tweetText = `New Sustainability feedback from Sustainedaway User\n"${
         feedback.substring(0, 200)
       }"...\n#SustainableProducts #EcoFeedback`;
       
-      await postTweet(tweetText, compressedImage); // Send compressed image
-      
+      await postTweet(tweetText, compressedImage); // Send compressed image  - just check and remove if needed
+      const result = await postTweet(tweetText, compressedImage);
+      setTweetUrl(result.tweetUrl); // Store the URL
       // 3. Show success
       setIsSubmitting(false);
       setIsSuccess(true);
@@ -369,23 +371,36 @@ const SustainaVoiceTest = () => {
           </form>
 
           {isSuccess && (
-            <Typography 
-              variant="body1" 
-              color="success.main" 
-              sx={{ 
-                mt: 2, 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                borderRadius: '8px',
-                p: 1,
-                backgroundColor: 'rgba(46, 125, 50, 0.1)'
-              }}
-            >
-              <span style={{ marginRight: '8px' }}>✓</span>
-              Thank you for your feedback!
-            </Typography>
-          )}
+  <Box sx={{ mt: 2 }}>
+    <Typography 
+      variant="body1" 
+      color="success.main"
+      sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        borderRadius: '8px',
+        p: 1,
+        backgroundColor: 'rgba(46, 125, 50, 0.1)'
+      }}
+    >
+      <span style={{ marginRight: '8px' }}>✓</span>
+      Thank you for your feedback!
+    </Typography>
+    
+    {tweetUrl && (
+      <Button
+        variant="outlined"
+        fullWidth
+        sx={{ mt: 2 }}
+        onClick={() => window.open(tweetUrl, '_blank')}
+        startIcon={<FaXTwitter />}
+      >
+        View Your Tweet
+      </Button>
+    )}
+  </Box>
+)}
           {isSuccess && (
             <>
               <Confetti width={window.innerWidth} height={window.innerHeight} recycle={false} />

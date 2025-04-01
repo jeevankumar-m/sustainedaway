@@ -36,13 +36,10 @@ app.post('/api/tweet', async (req, res) => {
         secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
       };
   
-      // Step 1: Upload media if image exists
+      // 1. Upload media if image exists
       let mediaId = null;
       if (imageData) {
-        // Convert base64 to buffer
         const buffer = Buffer.from(imageData.split(',')[1], 'base64');
-        
-        // Upload to Twitter
         const mediaUrl = 'https://upload.twitter.com/1.1/media/upload.json';
         const mediaAuthHeader = oauth.toHeader(oauth.authorize({
           url: mediaUrl,
@@ -68,7 +65,7 @@ app.post('/api/tweet', async (req, res) => {
         mediaId = mediaData.media_id_string;
       }
   
-      // Step 2: Post tweet with media
+      // 2. Post tweet
       const url = 'https://api.twitter.com/2/tweets';
       const authHeader = oauth.toHeader(oauth.authorize({
         url,
@@ -76,12 +73,9 @@ app.post('/api/tweet', async (req, res) => {
       }, token));
   
       const tweetData = {
-        text: text
+        text: text,
+        ...(mediaId && { media: { media_ids: [mediaId] } }) // Conditionally add media
       };
-  
-      if (mediaId) {
-        tweetData.media = { media_ids: [mediaId] };
-      }
   
       const response = await fetch(url, {
         method: 'POST',
@@ -93,7 +87,15 @@ app.post('/api/tweet', async (req, res) => {
       });
   
       const data = await response.json();
-      res.json({ success: true, data });
+      
+      // 3. Return tweet URL (single response)
+      const tweetUrl = `https://twitter.com/${process.env.TWITTER_USERNAME}/status/${data.data.id}`;
+      res.json({ 
+        success: true,
+        tweetUrl,
+        tweetId: data.data.id,
+        data // Optional: include full response if needed
+      });
       
     } catch (error) {
       console.error('Error:', error);
