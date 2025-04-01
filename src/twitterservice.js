@@ -1,6 +1,6 @@
 export async function postTweet(text, imageData = null) {
   try {
-    const response = await fetch('http://localhost:5000/api/tweet', {
+    const response = await fetch('https://sustainedaway-backend-3.onrender.com/api/tweet', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
