@@ -12,6 +12,7 @@ import { FaXTwitter } from "react-icons/fa6";
 import { auth, db } from "../firebase"; // Your Firebase config
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import "./SustainaVoice.css";
+import { postTweet } from '../twitterservice';
 
 const SustainaVoiceTest = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -97,6 +98,8 @@ const SustainaVoiceTest = () => {
     
     try {
       const user = auth.currentUser;
+      
+      // 1. Save to Firestore
       const feedbackData = {
         userId: user.uid,
         userEmail: user.email,
@@ -105,11 +108,17 @@ const SustainaVoiceTest = () => {
         productImage,
         createdAt: serverTimestamp()
       };
-      
-      // Save to Firestore
       const docRef = doc(db, "sustainabilityFeedback", `${user.uid}-${Date.now()}`);
       await setDoc(docRef, feedbackData);
       
+      // 2. Post to Twitter via your proxy
+      const tweetText = `New sustainability feedback from ${user.email}:\n"${
+        feedback.substring(0, 200)
+      }"...\n#SustainableProducts #EcoFeedback`;
+      
+      await postTweet(tweetText);
+      
+      // 3. Show success
       setIsSubmitting(false);
       setIsSuccess(true);
       setFeedback("");
@@ -118,12 +127,10 @@ const SustainaVoiceTest = () => {
       
       setTimeout(() => setIsSuccess(false), 3000);
       
-      // Here you would add the X API integration to post the feedback
-      console.log("Ready to post to X API:", feedbackData);
-      
     } catch (err) {
       console.error("Submission error:", err);
       setIsSubmitting(false);
+      // You can add state to show Twitter-specific errors if needed
     }
   };
 
