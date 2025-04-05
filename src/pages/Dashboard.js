@@ -146,6 +146,7 @@ const Dashboard = () => {
     setResponseText("");
 
     try {
+      // While Running the servers locally use "http://localhost:5000/api/process-image"
       const response = await fetch("https://sustainedaway-backend.onrender.com/api/process-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

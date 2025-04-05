@@ -69,6 +69,7 @@ const BillScanner = () => {
     setResponseData(null);
 
     try {
+      // While Running the servers locally use "http://localhost:5001/api/process-bill"
       const response = await fetch("https://sustainedaway-backend-server2.onrender.com/api/process-bill", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -3,7 +3,7 @@ import json
 import google.generativeai as genai
 from PIL import Image
 
-# Configure the Gemini API Key
+# Configure the Gemini API Key - Example Key provided here - Replace with your OWN
 genai.configure(api_key="AIzaSyBkHPWBOwk4O7D73q7zkAdTUitXqO1c9AY")
 
 def process_image(image_path):
