@@ -129,7 +129,9 @@ const Login = () => {
             </Typography>
           </Box>
 
-          <div className="earth-emoji">🌍</div>
+          <div className="earth-emoji">
+          <img src="./favicon.ico" alt="Earth" className="earth-image" />
+          </div>
 
           <Typography variant="h4" className="auth-title">
             {isRegistering ? "Create an Account" : "Login"}
