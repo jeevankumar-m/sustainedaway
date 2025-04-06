@@ -1,8 +1,4 @@
-Got it! Here's the revised `README.md` with **Leaflet** instead of Google Maps API, and everything else aligned with your current project setup:
-
----
-
-# 🌿 SustainedAway
+# 🌍 SustainedAway
 
 **SustainedAway** is a sustainability-focused web app that helps users make eco-conscious shopping decisions. By scanning products or bills, users receive instant sustainability insights, health impact analysis, and community-driven ratings. The app includes a Leaflet-based sustainability heat map, a gamified experience, and even allows sharing feedback on X (Twitter).
 
