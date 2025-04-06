@@ -1,74 +1,95 @@
-<<<<<<< HEAD
-# sustainedaway
-=======
-# Getting Started with Create React App
+Got it! Here's the revised `README.md` with **Leaflet** instead of Google Maps API, and everything else aligned with your current project setup:
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+---
 
-## Available Scripts
+# 🌿 SustainedAway
 
-In the project directory, you can run:
+**SustainedAway** is a sustainability-focused web app that helps users make eco-conscious shopping decisions. By scanning products or bills, users receive instant sustainability insights, health impact analysis, and community-driven ratings. The app includes a Leaflet-based sustainability heat map, a gamified experience, and even allows sharing feedback on X (Twitter).
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 🛠️ Getting Started
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+This project is divided into a frontend React app and three backend servers.
 
-### `npm test`
+### 🔧 Prerequisites
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Make sure you have the following installed:
 
-### `npm run build`
+- Node.js (v14 or above)
+- npm
+- Python (for `server.js and server2.js`)
+- Firebase 
+- Cloudinary credentials (for image upload in `server3.js`)
+- X API credentials
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+---
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 🚀 Running the App
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 1️⃣ Start the Frontend
 
-### `npm run eject`
+```bash
+npm install
+npm start
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Runs the React app on [http://localhost:3000](http://localhost:3000)
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### 2️⃣ Start the Backend Servers
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+In the project root directory:
 
-## Learn More
+#### ✅ Server 1 (Main App Server)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```bash
+node server.js
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Runs on: `http://localhost:5000`
 
-### Code Splitting
+#### ✅ Server 2 (Python Analysis Server)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Make sure your Python script is compatible and listed in `requirements.txt`.
 
-### Analyzing the Bundle Size
+```bash
+node server2.js
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Runs on: `http://localhost:5001`
 
-### Making a Progressive Web App
+This server auto-installs Python dependencies and executes sustainability analysis.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+#### ✅ Server 3 (Image Upload + AI Handler)
 
-### Advanced Configuration
+```bash
+node server3.js
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Runs on: `http://localhost:5002`
 
-### Deployment
+Handles Cloudinary uploads and sends back image URLs.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+---
 
-### `npm run build` fails to minify
+## 📦 Available Scripts (in `/client`)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
->>>>>>> 82a7527 (Initial commit)
+| Command           | Description                                 |
+|------------------|---------------------------------------------|
+| `npm start`       | Runs the app in development mode            |
+| `npm test`        | Launches test runner                        |
+| `npm run build`   | Builds the app for production               |
+| `npm run eject`   | Ejects the app configuration (not reversible) |
+
+---
+
+## 🔗 External Integrations
+
+- **Cloudinary** – For image uploads (server3.js)
+- **Leaflet** – Interactive sustainability heat map (eco-store markers)
+- **Firebase / Firestore** – Product & user data storage
+- **Twitter (X)** – For sharing sustainability feedback
+
+---
