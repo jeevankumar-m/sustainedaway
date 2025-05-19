@@ -15,6 +15,7 @@ import "./SustainaVoice.css";
 import { postTweet } from '../twitterservice';
 import Confetti from 'react-confetti';
 import { signOut } from "firebase/auth";
+import Loader from "../Loader";
 
 const SustainaVoiceTest = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -32,6 +33,7 @@ const SustainaVoiceTest = () => {
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const MAX_CHARACTERS = 280;
 
@@ -234,6 +236,7 @@ const SustainaVoiceTest = () => {
 
   return (
     <div className="sustaina-voice-container">
+      {loading && <Loader />}
       {/* Top Bar - Fixed Position */}
       <div className="top-bar">
         <IconButton onClick={() => setMenuOpen(!menuOpen)} className="menu-button">

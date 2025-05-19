@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Loader from "../Loader";
 
 const SDGGoals = () => {
   const navigate = useNavigate();
   const [currentGoalIndex, setCurrentGoalIndex] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const sdgGoals = [
     {
@@ -38,6 +40,7 @@ const SDGGoals = () => {
 
   return (
     <div style={styles.pageContainer}>
+      {loading && <Loader />}
       <div style={styles.phoneContainer}>
         <h1 style={styles.title}>Sustainable Development Goals</h1>
         <p style={styles.subtitle}>At Sustainedaway, we tackle the following SDGs:</p>

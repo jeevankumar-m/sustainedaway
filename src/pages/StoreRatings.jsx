@@ -8,6 +8,7 @@ import { db } from "../firebase";
 import { collection, getDocs, addDoc } from "firebase/firestore";
 import { getAuth, signOut } from "firebase/auth";
 import "./Dashboard.css"; // ✅ Reused Dashboard styles
+import Loader from "../Loader";
 
 const StoreRatings = () => {
   const [map, setMap] = useState(null);
@@ -18,6 +19,7 @@ const StoreRatings = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const auth = getAuth();
+  const [loading, setLoading] = useState(false);
 
   // Ref for the scrollable content
   const scrollableContentRef = useRef(null);
@@ -64,6 +66,7 @@ const StoreRatings = () => {
 
   // 🏬 Fetch store ratings & group nearby locations
   const fetchStoreRatings = async () => {
+    setLoading(true);
     const querySnapshot = await getDocs(collection(db, "storeRatings"));
     let ratingsData = [];
 
@@ -141,6 +144,7 @@ const StoreRatings = () => {
         },
       }).addTo(map);
     }
+    setLoading(false);
   };
 
   // ⭐ Submit a new rating
@@ -162,6 +166,7 @@ const StoreRatings = () => {
 
   return (
     <div className="dashboard">
+      {loading && <Loader />}
       {/* 🔹 Top Bar */}
       <div className="top-bar">
         <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)}>
