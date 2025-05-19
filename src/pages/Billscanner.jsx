@@ -101,22 +101,51 @@ const BillScanner = () => {
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 via-green-50 to-green-200 overflow-hidden" style={{ fontFamily: 'SF Pro, San Francisco, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif' }}>
       <BackgroundIcons />
       {loading && <Loader />}
-      {/* Top Bar */}
-      <div className="top-bar z-20">
-        <IconButton onClick={() => setMenuOpen(!menuOpen)} className="menu-button">
-          <FaBars />
-        </IconButton>
-        <Typography variant="h5" className="title">📄 Bill Scanner - Scan Your Bills To Know</Typography>
+      {/* Full-width Enhanced Top Bar, now flush with the top */}
+      <div className="fixed top-0 left-0 w-full z-20">
+        <div className="w-full flex items-center justify-between px-8 py-2 bg-gradient-to-r from-green-500 via-green-400 to-blue-300/80 backdrop-blur-lg shadow-lg border-b-2 border-green-200/40" style={{ minHeight: 60, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
+          <IconButton onClick={() => setMenuOpen(!menuOpen)} className="menu-button !text-white">
+            <FaBars size={24} />
+          </IconButton>
+          <Typography variant="h6" className="font-bold tracking-tight text-white drop-shadow-lg" style={{ fontFamily: 'inherit', fontSize: '1.1rem', letterSpacing: '-0.01em' }}>
+            Bill Scanner
+          </Typography>
+          <div style={{ width: 40 }} /> {/* Spacer for symmetry */}
+        </div>
       </div>
-      {/* Floating Side Menu */}
-      <div className={`side-menu ${menuOpen ? "open" : ""} z-30`}>
-        <ul>
-          <li onClick={() => { setMenuOpen(false); navigate("/dashboard"); }}> <FaCamera /> Scanner </li>
-          <li onClick={() => { setMenuOpen(false); navigate("/bill-scanner"); }} className="active"> <FaFileInvoice /> Bill Scanner </li>
-          <li onClick={() => { setMenuOpen(false); navigate("/store-ratings"); }}> <FaStore /> Store Ratings </li>
-          <li onClick={() => { setMenuOpen(false); navigate("/sustainavoice"); }}> <FaComments /> SustainaVoice </li>
-          <li onClick={() => { setMenuOpen(false); navigate("/history"); }}> <FaHistory /> History </li>
-          <li onClick={handleSignOut}><FaSignOutAlt /> Sign Out</li>
+      {/* Floating Side Menu, now below the header */}
+      <div className={`side-menu ${menuOpen ? "open" : ""} z-30 fixed left-0 top-20`}>
+        <ul className="pt-6 pb-4 px-2">
+          <li onClick={() => { setMenuOpen(false); navigate("/dashboard"); }} className="mb-2">
+            <span className="flex items-center gap-2 font-semibold text-base text-green-800 hover:bg-green-100/60 px-3 py-2 rounded-xl transition-all">
+              <FaCamera /> Scanner
+            </span>
+          </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/bill-scanner"); }} className="active mb-2">
+            <span className="flex items-center gap-2 font-bold text-base text-white bg-gradient-to-r from-green-500 to-green-700 px-3 py-2 rounded-xl shadow-md">
+              <FaFileInvoice /> Bill Scanner
+            </span>
+          </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/store-ratings"); }} className="mb-2">
+            <span className="flex items-center gap-2 font-semibold text-base text-green-800 hover:bg-green-100/60 px-3 py-2 rounded-xl transition-all">
+              <FaStore /> Store Ratings
+            </span>
+          </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/sustainavoice"); }} className="mb-2">
+            <span className="flex items-center gap-2 font-semibold text-base text-green-800 hover:bg-green-100/60 px-3 py-2 rounded-xl transition-all">
+              <FaComments /> SustainaVoice
+            </span>
+          </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/history"); }} className="mb-2">
+            <span className="flex items-center gap-2 font-semibold text-base text-green-800 hover:bg-green-100/60 px-3 py-2 rounded-xl transition-all">
+              <FaHistory /> History
+            </span>
+          </li>
+          <li onClick={handleSignOut} className="mt-4">
+            <span className="flex items-center gap-2 font-semibold text-base text-red-700 hover:bg-red-100/60 px-3 py-2 rounded-xl transition-all">
+              <FaSignOutAlt /> Sign Out
+            </span>
+          </li>
         </ul>
       </div>
       {/* Glassmorphic Card */}
