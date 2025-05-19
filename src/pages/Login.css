@@ -106,15 +106,15 @@ body {
 }
 
 /* Forgot Password */
-.forgot-password {
-  color: #4CAF50 !important;
-  text-decoration: none;
-}
-
-.forgot-password:hover {
-  color: #4CAF50 !important;
-  text-decoration: none;
-}
+/* .forgot-password {
+//   color: #4CAF50 !important;
+//   text-decoration: none;
+// }
+//
+// .forgot-password:hover {
+//   color: #4CAF50 !important;
+//   text-decoration: none;
+// } */
 
 /* Animations */
 @keyframes fadeIn {
@@ -157,4 +157,61 @@ body {
 .post-registration-container .MuiTypography-body1 {
   font-family: "Poppins", sans-serif;
   color: #333;
+}
+
+/* Custom animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Custom input styles */
+.custom-input .MuiOutlinedInput-root {
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.custom-input .MuiOutlinedInput-root:hover {
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.custom-input .MuiOutlinedInput-root.Mui-focused {
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+/* Toast customization */
+.Toastify__toast {
+  border-radius: 0.5rem;
+}
+
+.Toastify__toast--success {
+  background: #4CAF50;
+}
+
+.Toastify__toast--error {
+  background: #f44336;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4CAF50;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #388e3c;
 }
