@@ -1,24 +1,23 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Container, Typography, IconButton, CircularProgress } from "@mui/material";
-import { FaBars, FaStore, FaHistory, FaFileInvoice, FaCamera, FaSignOutAlt, FaRedo, FaComments  } from "react-icons/fa";
+import { Typography, IconButton, CircularProgress } from "@mui/material";
+import { FaBars, FaSignOutAlt, FaCamera, FaFileInvoice, FaStore, FaComments, FaHistory, FaRedo } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
-import { db } from "../firebase"; // Ensure Firestore is initialized
-import { collection, addDoc, serverTimestamp } from "firebase/firestore"; // Firestore imports
-import "./Dashboard.css"; // External CSS for styling
+import { db } from "../firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import "./Dashboard.css";
+import Loader from "../Loader";
+import BackgroundIcons from "../BackgroundIcons";
 
 // Cloudinary configuration
 const cloudinaryConfig = {
-  cloudName: 'dgfepyx8a', // Replace with your Cloudinary cloud name
-  uploadPreset: 'sustainedaway_preset' // Replace with your Cloudinary upload preset (optional)
+  cloudName: 'dgfepyx8a',
+  uploadPreset: 'sustainedaway_preset'
 };
 
 // Sustainability Meter Component
 const SustainabilityMeter = ({ rating }) => {
-  // Ensure the rating is between 1 and 5
   const normalizedRating = Math.min(Math.max(rating, 1), 5);
-
-  // Calculate the percentage for the gauge (0% to 100%)
   const percentage = (normalizedRating / 5) * 100;
 
   return (
@@ -27,7 +26,7 @@ const SustainabilityMeter = ({ rating }) => {
         <div
           className="gauge-fill"
           style={{
-            transform: `rotate(${(percentage / 100) * 180}deg)`, // Rotate based on percentage
+            transform: `rotate(${(percentage / 100) * 180}deg)`,
           }}
         ></div>
         <div className="gauge-cover"></div>
@@ -52,17 +51,17 @@ const Dashboard = () => {
   const [stream, setStream] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const aiResponseRef = useRef(null); // Ref for AI response container
+  const aiResponseRef = useRef(null);
   const navigate = useNavigate();
   const auth = getAuth();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     startCamera();
-    return () => stopCamera(); // Stop camera on unmount
+    return () => stopCamera();
   }, []);
 
   useEffect(() => {
-    // Scroll to the top of the AI response container when new data is displayed
     if (aiResponseRef.current && responseText) {
       aiResponseRef.current.scrollTop = 0;
     }
@@ -70,16 +69,12 @@ const Dashboard = () => {
 
   const startCamera = async () => {
     try {
-      // Check if the device is mobile
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-      // Set constraints for the camera
       const constraints = {
         video: {
-          facingMode: isMobile ? { exact: "environment" } : "user", // Use rear camera on mobile, front camera otherwise
+          facingMode: isMobile ? { exact: "environment" } : "user",
         },
       };
-
       const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
@@ -111,13 +106,13 @@ const Dashboard = () => {
     setCapturedImage(dataUrl);
     uploadImageToCloudinary(dataUrl);
 
-    stopCamera(); // Stop camera after capturing
+    stopCamera();
   };
 
   const uploadImageToCloudinary = async (dataUrl) => {
     const formData = new FormData();
     formData.append('file', dataUrl);
-    formData.append('upload_preset', cloudinaryConfig.uploadPreset); // Optional
+    formData.append('upload_preset', cloudinaryConfig.uploadPreset);
 
     try {
       const response = await fetch(
@@ -128,15 +123,12 @@ const Dashboard = () => {
         }
       );
       const data = await response.json();
-      console.log("Cloudinary Upload Response:", data); // Log Cloudinary response
       if (data.secure_url) {
-        processImage(dataUrl.split(",")[1], data.secure_url); // Pass Cloudinary URL to processImage
+        processImage(dataUrl.split(",")[1], data.secure_url);
       } else {
-        console.error("Cloudinary URL not found in response:", data);
         setResponseText("⚠️ Failed to upload image to Cloudinary.");
       }
     } catch (error) {
-      console.error("Error uploading image to Cloudinary:", error);
       setResponseText("⚠️ Failed to upload image to Cloudinary.");
     }
   };
@@ -146,7 +138,6 @@ const Dashboard = () => {
     setResponseText("");
 
     try {
-      // While Running the servers locally use "http://localhost:5000/api/process-image"
       const response = await fetch("https://sustainedaway-backend-wjom.onrender.com/api/process-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -154,7 +145,6 @@ const Dashboard = () => {
       });
 
       const data = await response.json();
-      console.log("📝 AI Response Received:", data);
 
       if (data.error) {
         setResponseText(`⚠️ Error: ${data.error}`);
@@ -171,17 +161,14 @@ const Dashboard = () => {
               🔄 Recycling Feasibility: {data["Recycling Feasibility"] || "N/A"}<br />
               🌱 Alternative Options: {data["Alternative Options"] || "None"}<br />
               ❤️ Health Impact: {data["Health Impact"] || "None"}<br />
-
             </p>
             <SustainabilityMeter rating={parseFloat(data["Sustainability Rating"]) || 0} />
           </>
         );
 
-        // Save to Firestore with Cloudinary URL
         saveHistoryToFirestore(data, imageUrl);
       }
     } catch (error) {
-      console.error("❌ Error processing image:", error);
       setResponseText("⚠️ Failed to process the image.");
     } finally {
       setProcessing(false);
@@ -189,15 +176,14 @@ const Dashboard = () => {
   };
 
   const saveHistoryToFirestore = async (aiResponse, imageUrl) => {
-    const user = auth.currentUser; // Get logged-in user
+    const user = auth.currentUser;
 
     if (!user) {
-      console.log("🚫 User not logged in, skipping history save.");
       return;
     }
 
     try {
-      const docRef = await addDoc(collection(db, "history"), {
+      await addDoc(collection(db, "history"), {
         userId: user.uid,
         productName: aiResponse["Product Name"] || "Unknown Product",
         brand: aiResponse["Brand"] || "Unknown Brand",
@@ -208,90 +194,110 @@ const Dashboard = () => {
         packagingMaterial: aiResponse["Packaging Material"],
         recyclingFeasibility: aiResponse["Recycling Feasibility"],
         recyclingtips: aiResponse["Recycling Tips"] || "No Tips Available",
-        healthimpact: aiResponse["Health Impact"] || "N/A", 
-        imageUrl: imageUrl, // Cloudinary URL
+        healthimpact: aiResponse["Health Impact"] || "N/A",
+        imageUrl: imageUrl,
         dateScanned: serverTimestamp(),
       });
-
-      console.log("✅ History saved successfully! Document ID:", docRef.id);
     } catch (error) {
-      console.error("❌ Error saving history:", error);
+      console.error("Error saving history:", error);
     }
   };
 
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      navigate("/"); // Redirect to login after sign out
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
+      navigate("/");
+    } catch (error) {}
   };
 
   const retakeImage = () => {
     setCapturedImage(null);
-    startCamera(); // Restart the camera
+    startCamera();
   };
 
   return (
-    <Container className="dashboard">
-      {/* Top Bar */}
-      <div className="top-bar">
-        <IconButton onClick={() => setMenuOpen(!menuOpen)} className="menu-button">
-          <FaBars />
-        </IconButton>
-        <Typography variant="h5" className="title">📷 Sustainaway Scanner </Typography>
-        <IconButton className="sign-out-button" onClick={handleSignOut}>
-          <FaSignOutAlt />
-        </IconButton>
-      </div>
-
-      {/* Camera and Capture Button */}
-      <div className="camera-container">
-        {capturedImage ? (
-          <>
-            <img src={capturedImage} alt="Captured" className="captured-image" />
-            <div className="retake-container">
-              <IconButton className="retake-button" onClick={retakeImage}>
-                <FaRedo />
-              </IconButton>
-            </div>
-          </>
-        ) : (
-          <video ref={videoRef} autoPlay playsInline className="camera-view" />
-        )}
-        <canvas ref={canvasRef} style={{ display: "none" }} />
-      </div>
-
-      {/* Capture Button */}
-      <div className="capture-container">
-        <IconButton className="capture-button" onClick={captureImage}>
-          <FaCamera />
-        </IconButton>
-      </div>
-
-      {/* AI Response Box */}
-      {responseText && (
-        <div ref={aiResponseRef} className="response-box">
-          {responseText}
+    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 via-green-50 to-green-200 overflow-hidden" style={{ fontFamily: 'SF Pro, San Francisco, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif' }}>
+      <BackgroundIcons />
+      {loading && <Loader />}
+      {/* Full-width Enhanced Top Bar */}
+      <div className="fixed top-0 left-0 w-full z-20">
+        <div className="w-full flex items-center justify-between px-8 py-2 bg-gradient-to-r from-green-500 via-green-400 to-blue-300/80 backdrop-blur-lg shadow-lg border-b-2 border-green-200/40" style={{ minHeight: 60, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
+          <IconButton onClick={() => setMenuOpen(!menuOpen)} className="menu-button !text-white">
+            <FaBars size={24} />
+          </IconButton>
+          <Typography variant="h6" className="font-bold tracking-tight text-white drop-shadow-lg" style={{ fontFamily: 'inherit', fontSize: '1.1rem', letterSpacing: '-0.01em' }}>
+            Scanner
+          </Typography>
+          <div style={{ width: 40 }} /> {/* Spacer for symmetry */}
         </div>
-      )}
+      </div>
 
-      {/* Loading Indicator */}
-      {processing && <CircularProgress className="loading-spinner" />}
-
-      {/* Floating Menu */}
-      <div className={`side-menu ${menuOpen ? "open" : ""}`}>
-        <ul>
-          <li onClick={() => { setMenuOpen(false); navigate("/dashboard"); }}> <FaCamera /> Scanner </li>
-          <li onClick={() => { setMenuOpen(false); navigate("/bill-scanner"); }}> <FaFileInvoice /> Bill Scanner </li>
-          <li onClick={() => { setMenuOpen(false); navigate("/store-ratings"); }}> <FaStore /> Store Ratings </li>
-          <li onClick={() => { setMenuOpen(false); navigate("/sustainavoice"); }}> <FaComments /> SustainaVoice </li> 
-          <li onClick={() => { setMenuOpen(false); navigate("/history"); }}> <FaHistory /> History </li>
-          <li onClick={handleSignOut}> <FaSignOutAlt /> Sign Out </li>
+      {/* Floating Side Menu */}
+      <div className={`side-menu ${menuOpen ? "open" : ""} z-30 fixed left-0 top-20`}>
+        <ul className="pt-6 pb-4 px-2">
+          <li onClick={() => { setMenuOpen(false); navigate("/dashboard"); }} className="active mb-2">
+            <span className="flex items-center gap-2 font-bold text-base text-white bg-gradient-to-r from-green-500 to-green-700 px-3 py-2 rounded-xl shadow-md">
+              <FaCamera /> Scanner
+            </span>
+          </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/bill-scanner"); }} className="mb-2">
+            <span className="flex items-center gap-2 font-semibold text-base text-green-800 hover:bg-green-100/60 px-3 py-2 rounded-xl transition-all">
+              <FaFileInvoice /> Bill Scanner
+            </span>
+          </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/store-ratings"); }} className="mb-2">
+            <span className="flex items-center gap-2 font-semibold text-base text-green-800 hover:bg-green-100/60 px-3 py-2 rounded-xl transition-all">
+              <FaStore /> Store Ratings
+            </span>
+          </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/sustainavoice"); }} className="mb-2">
+            <span className="flex items-center gap-2 font-semibold text-base text-green-800 hover:bg-green-100/60 px-3 py-2 rounded-xl transition-all">
+              <FaComments /> SustainaVoice
+            </span>
+          </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/history"); }} className="mb-2">
+            <span className="flex items-center gap-2 font-semibold text-base text-green-800 hover:bg-green-100/60 px-3 py-2 rounded-xl transition-all">
+              <FaHistory /> History
+            </span>
+          </li>
+          <li onClick={handleSignOut} className="mt-4">
+            <span className="flex items-center gap-2 font-semibold text-base text-red-700 hover:bg-red-100/60 px-3 py-2 rounded-xl transition-all">
+              <FaSignOutAlt /> Sign Out
+            </span>
+          </li>
         </ul>
       </div>
-    </Container>
+
+      {/* Glassmorphic Card */}
+      <div className="relative w-full max-w-md mx-auto rounded-3xl bg-white/30 backdrop-blur-lg border border-white/40 shadow-2xl flex flex-col items-stretch min-h-[80vh] overflow-hidden z-10 mt-20">
+        <div className="flex-1 p-4 overflow-y-auto">
+          <div className="w-full flex flex-col items-center">
+            {capturedImage ? (
+              <>
+                <img src={capturedImage} alt="Captured" className="rounded-xl w-full max-w-xs mb-4 shadow" />
+                <button onClick={retakeImage} className="mb-4 px-4 py-2 bg-gradient-to-r from-green-400 to-green-600 text-white rounded-xl font-bold shadow hover:from-green-500 hover:to-green-700 transition-all">Retake</button>
+              </>
+            ) : (
+              <>
+                <video ref={videoRef} autoPlay playsInline className="rounded-xl w-full max-w-xs mb-4 bg-black/20" />
+                <canvas ref={canvasRef} style={{ display: "none" }} />
+                <button onClick={captureImage} className="mt-2 px-6 py-2 bg-gradient-to-r from-green-400 to-green-600 text-white rounded-xl font-bold shadow hover:from-green-500 hover:to-green-700 transition-all flex items-center gap-2">
+                  <FaCamera className="text-lg" />
+                  Capture
+                </button>
+              </>
+            )}
+          </div>
+          {/* Results */}
+          {processing && <Loader />}
+          {responseText && (
+            <div ref={aiResponseRef} className="response-box mt-4">
+              {responseText}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 
