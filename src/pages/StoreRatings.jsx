@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { FaBars, FaStore, FaHistory, FaFileInvoice, FaCamera, FaSignOutAlt, FaComments, FaDirections, FaStar } from "react-icons/fa";
+import { FaBars, FaStore, FaHistory, FaFileInvoice, FaCamera, FaSignOutAlt, FaComments, FaDirections, FaStar, FaLeaf } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -9,7 +9,7 @@ import { getAuth, signOut } from "firebase/auth";
 import "./Dashboard.css";
 import Loader from "../Loader";
 import * as turf from "@turf/turf";
-import { Button, Card, CardContent, Typography } from '@mui/material';
+import { Button, Card, CardContent, Typography, Fab } from '@mui/material';
 
 // Replace with your Mapbox access token
 mapboxgl.accessToken = "pk.eyJ1IjoiamVldmFua3VtYXIwNiIsImEiOiJjbWE1NXoxZnAwZ3p3MndzZGd1MDV5enVpIn0.td1ijvmrNUL0WFj61KS0lg";
@@ -534,7 +534,7 @@ const StoreRatings = () => {
     return R * 2 * Math.asin(Math.sqrt(a));
   }
 
-  // Tracker: Show directions to all sustainable stores within 4km
+  // Tracker: Show green lines to sustainable stores (rating >= 3) within 4km
   const handleShowTracker = async () => {
     if (!userLocation) return;
     setShowTracker(!showTracker);
@@ -551,7 +551,8 @@ const StoreRatings = () => {
     const storesData = storesSource._data.features;
     const nearby = storesData.filter(f => {
       const [lng, lat] = f.geometry.coordinates;
-      return getDistanceFromLatLonInKm(userLocation.lat, userLocation.lng, lat, lng) <= 4;
+      const avgRating = f.properties.avgRating;
+      return getDistanceFromLatLonInKm(userLocation.lat, userLocation.lng, lat, lng) <= 4 && avgRating >= 3;
     });
     // For each nearby store, get route and draw
     const routes = [];
@@ -597,9 +598,9 @@ const StoreRatings = () => {
         source: 'tracker-routes',
         layout: { 'line-join': 'round', 'line-cap': 'round' },
         paint: {
-          'line-color': '#2196F3',
-          'line-width': 2,
-          'line-opacity': 0.4,
+          'line-color': '#43a047', // Green
+          'line-width': 3,
+          'line-opacity': 0.7,
           'line-dasharray': [2, 2]
         }
       });
@@ -646,17 +647,27 @@ const StoreRatings = () => {
         <div
           ref={mapContainer}
           className="map-container"
-          style={{ width: 600, height: 340, minWidth: 250, minHeight: 200, maxWidth: '90vw', maxHeight: '60vh', borderRadius: 14, margin: '18px 0' }}
+          style={{ width: 600, height: 340, minWidth: 250, minHeight: 200, maxWidth: '90vw', maxHeight: '60vh', borderRadius: 14, margin: '18px 0', position: 'relative' }}
         />
-        <Button
-          variant="outlined"
-          color="success"
-          size="small"
-          style={{ marginBottom: 16, fontWeight: 600, borderRadius: 7, fontSize: 13, padding: '4px 12px' }}
+        {/* Floating round tracker button */}
+        <Fab
+          color={showTracker ? 'success' : 'default'}
+          size="medium"
+          aria-label="Sustainable Stores Tracker"
           onClick={handleShowTracker}
+          style={{
+            position: 'absolute',
+            right: 40,
+            bottom: 40,
+            zIndex: 10,
+            boxShadow: '0 2px 8px #0002',
+            background: showTracker ? '#43a047' : 'white',
+            color: showTracker ? 'white' : '#43a047',
+            transition: 'all 0.2s',
+          }}
         >
-          Sustainable Stores Tracker
-        </Button>
+          <FaLeaf style={{ fontSize: 22 }} />
+        </Fab>
         {/* Card for selected store info */}
         {selectedStore && (
           <Card style={{ width: 300, maxWidth: '95vw', marginBottom: 16, borderRadius: 10, boxShadow: '0 1px 6px #0001', padding: 0 }}>
@@ -698,21 +709,6 @@ const StoreRatings = () => {
               >
                 Get Directions
               </Button>
-            </CardContent>
-          </Card>
-        )}
-        {/* Cards for all nearby stores if tracker is active */}
-        {showTracker && nearbyRoutes.length > 0 && (
-          <Card style={{ width: 300, maxWidth: '95vw', marginBottom: 16, borderRadius: 10, boxShadow: '0 1px 6px #0001', padding: 0 }}>
-            <CardContent style={{ padding: 10 }}>
-              <Typography variant="subtitle2" style={{ fontWeight: 700, marginBottom: 4, fontSize: 14 }}>Nearby Sustainable Stores (≤ 4 km)</Typography>
-              <ul style={{ paddingLeft: 14, fontSize: 12 }}>
-                {nearbyRoutes.map((r, i) => (
-                  <li key={r.id} style={{ marginBottom: 4 }}>
-                    <b>{r.storeName}</b>
-                  </li>
-                ))}
-              </ul>
             </CardContent>
           </Card>
         )}
