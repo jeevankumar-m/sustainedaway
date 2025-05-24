@@ -291,8 +291,10 @@ const Dashboard = () => {
           {/* Results */}
           {processing && <Loader />}
           {responseText && (
-            <div ref={aiResponseRef} className="response-box mt-4">
-              {responseText}
+            <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+              <div ref={aiResponseRef} className="response-box">
+                {responseText}
+              </div>
             </div>
           )}
         </div>
