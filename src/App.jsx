@@ -8,6 +8,7 @@ import StoreRatings from "./pages/StoreRatings";
 import SDGGoals from "./pages/SDGGoals";
 import Postregistration from "./pages/Postregistration";
 import SustainaVoice from "./pages/SustainaVoice"; // ✅ Import the new component
+import Landing from "./pages/Landing";
 import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -29,14 +30,16 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Login />} />
-        <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/" />} />
-        <Route path="/history" element={user ? <History /> : <Navigate to="/" />} />
-        <Route path="/bill-scanner" element={user ? <BillScanner /> : <Navigate to="/" />} />
-        <Route path="/store-ratings" element={user ? <StoreRatings /> : <Navigate to="/" />} />
-        <Route path="/post-registration" element={user ? <Postregistration /> : <Navigate to="/" />} />
-        <Route path="/sdg-goals" element={user ? <SDGGoals /> : <Navigate to="/" />} />
-        <Route path="/sustainavoice" element={user ? <SustainaVoice /> : <Navigate to="/" />} /> {/* ✅ Add SustainaVoice */}
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
+        <Route path="/history" element={user ? <History /> : <Navigate to="/login" />} />
+        <Route path="/bill-scanner" element={user ? <BillScanner /> : <Navigate to="/login" />} />
+        <Route path="/store-ratings" element={user ? <StoreRatings /> : <Navigate to="/login" />} />
+        <Route path="/post-registration" element={user ? <Postregistration /> : <Navigate to="/login" />} />
+        <Route path="/sdg-goals" element={user ? <SDGGoals /> : <Navigate to="/login" />} />
+        <Route path="/sustainavoice" element={user ? <SustainaVoice /> : <Navigate to="/login" />} />
+        <Route path="/landing" element={<Landing />} />
       </Routes>
     </Router>
   );
