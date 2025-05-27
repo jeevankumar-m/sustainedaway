@@ -731,8 +731,8 @@ const StoreRatings = () => {
                 variant="outlined"
                 color="primary"
                 size="small"
-                className="w-full mt-2 rounded-lg text-xs sm:text-sm"
-                style={{ borderRadius: 7, fontSize: 13, padding: '4px 10px' }}
+                className="w-full mt-2 rounded-lg text-xs sm:text-sm block"
+                style={{ borderRadius: 7, fontSize: 13, padding: '4px 10px', boxSizing: 'border-box', overflow: 'hidden', minWidth: 0, maxWidth: '100%' }}
                 onClick={() => getDirections(selectedStore)}
                 startIcon={<FaDirections style={{ fontSize: 14 }} />}
               >
