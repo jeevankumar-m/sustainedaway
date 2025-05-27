@@ -15,7 +15,7 @@ import { auth } from "../firebase";
 import { TextField, InputAdornment } from "@mui/material";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { FaGoogle, FaEnvelope, FaLock, FaUser } from 'react-icons/fa';
+import { FaGoogle, FaEnvelope, FaLock, FaUser, FaArrowLeft } from 'react-icons/fa';
 import Loader from "../Loader";
 import { FcGoogle } from 'react-icons/fc';
 import { motion } from "framer-motion";
@@ -119,6 +119,20 @@ const Login = () => {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-green-50 overflow-hidden" style={{fontFamily: 'SF Pro, San Francisco, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif'}}>
+      {/* Back Button */}
+      <motion.button
+        className="absolute top-6 left-6 z-20 p-0 m-0 bg-transparent border-none outline-none shadow-none"
+        style={{ background: 'none', boxShadow: 'none', border: 'none' }}
+        onClick={() => navigate('/')}
+        aria-label="Back to landing page"
+        initial={{ opacity: 0, y: -16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.92 }}
+      >
+        <FaArrowLeft className="text-green-700 text-2xl" />
+      </motion.button>
       {/* Top Curved Background */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120vw] h-60 bg-gradient-to-br from-green-300 via-green-100 to-blue-200 rounded-b-[60vw] blur-2xl opacity-80 z-0" />
       {/* Bottom Curved Background */}

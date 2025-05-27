@@ -244,6 +244,7 @@ export default function Landing() {
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.98 }}
                   className="self-start bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-6 py-2 rounded-full shadow-md hover:from-cyan-500 hover:to-blue-500"
+                  onClick={() => navigate('/login')}
                 >
                   Explore Map
                 </motion.button>
@@ -268,6 +269,7 @@ export default function Landing() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold px-8 py-2 rounded-full shadow-lg hover:from-cyan-500 hover:to-blue-500"
+              onClick={() => navigate('/login')}
             >
               Share Feedback
             </motion.button>
