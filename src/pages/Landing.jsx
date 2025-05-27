@@ -276,31 +276,6 @@ export default function Landing() {
           </motion.div>
         </section>
       </main>
-      {/* Mobile Bottom Nav */}
-      <motion.nav 
-        initial={{ y: 100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="md:hidden fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-lg shadow-lg flex justify-around items-center py-3 z-40 border-t border-emerald-100"
-      >
-        {[
-          { icon: <FaLeaf />, label: "Home" },
-          { icon: <FaCamera />, label: "Scan" },
-          { icon: <FaHistory />, label: "History" },
-          { icon: <FaMapMarkedAlt />, label: "Map" },
-          { icon: <FaUser />, label: "Profile" }
-        ].map((item, index) => (
-          <motion.a 
-            key={index}
-            whileTap={{ scale: 0.9 }}
-            href={`#${item.label.toLowerCase()}`}
-            className="flex flex-col items-center text-emerald-700 text-xs"
-          >
-            <div className="text-xl mb-1">{item.icon}</div>
-            {item.label}
-          </motion.a>
-        ))}
-      </motion.nav>
     </div>
   );
 }
