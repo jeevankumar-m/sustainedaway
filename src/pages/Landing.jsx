@@ -143,23 +143,23 @@ export default function Landing() {
           initial="hidden"
           animate="visible"
           variants={staggerContainer}
-          className="w-full px-6 py-12 md:py-24 max-w-6xl mx-auto"
+          className="w-full px-2 sm:px-4 py-8 sm:py-12 md:py-24 max-w-6xl mx-auto"
         >
           <motion.div 
             variants={fadeIn}
-            className="text-center mb-12"
+            className="text-center mb-8 sm:mb-12"
           >
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-emerald-900 mb-6">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-emerald-900 mb-4 sm:mb-6">
               Track. Rate. <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">Live Sustainably.</span>
             </h1>
-            <p className="text-lg md:text-xl text-emerald-700 mb-8 max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base md:text-xl text-emerald-700 mb-6 sm:mb-8 max-w-xs sm:max-w-2xl mx-auto">
               Scan products and bills to discover their sustainability scores.
               Make better choices for your health and the planet.
             </p>
             <motion.button 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold px-8 py-3 rounded-full shadow-lg hover:from-teal-500 hover:to-emerald-500 hover:shadow-emerald-200 transition"
+              className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold px-5 py-2 sm:px-8 sm:py-3 rounded-full shadow-lg hover:from-teal-500 hover:to-emerald-500 hover:shadow-emerald-200 transition text-sm sm:text-base"
               onClick={() => navigate('/login')}
             >
               Get Started – It's Free 🌱
@@ -168,12 +168,12 @@ export default function Landing() {
 
           <motion.div 
             variants={zoomIn}
-            className="bg-white rounded-2xl shadow-2xl p-6 border border-emerald-200 max-w-3xl mx-auto flex items-center justify-center"
+            className="bg-white rounded-2xl shadow-2xl p-3 sm:p-6 border border-emerald-200 max-w-3xl mx-auto flex items-center justify-center min-w-0"
           >
-            <div className="w-full h-64 bg-white rounded-xl flex items-center justify-center shadow-inner border border-emerald-100">
+            <div className="w-full h-40 sm:h-64 bg-white rounded-xl flex items-center justify-center shadow-inner border border-emerald-100 min-w-0">
               <div className="text-center">
-                <FaCamera className="text-emerald-600 text-5xl mx-auto mb-4 drop-shadow-lg" />
-                <p className="text-emerald-800 font-bold text-lg">Product Scanner Preview</p>
+                <FaCamera className="text-emerald-600 text-3xl sm:text-5xl mx-auto mb-2 sm:mb-4 drop-shadow-lg" />
+                <p className="text-emerald-800 font-bold text-base sm:text-lg">Product Scanner Preview</p>
               </div>
             </div>
           </motion.div>
@@ -185,36 +185,36 @@ export default function Landing() {
           whileInView="visible"
           viewport={{ once: true }}
           variants={staggerContainer}
-          className="w-full px-6 py-16 bg-white/30"
+          className="w-full px-2 sm:px-6 py-8 sm:py-16 bg-white/30"
         >
           <div className="max-w-6xl mx-auto">
             <motion.h2 
               variants={fadeIn}
-              className="text-3xl md:text-4xl font-bold text-center text-emerald-900 mb-12"
+              className="text-xl sm:text-2xl md:text-4xl font-bold text-center text-emerald-900 mb-8 sm:mb-12"
             >
               Our Powerful Features
             </motion.h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {features.map((feature, index) => (
                 <motion.div 
                   key={index}
                   variants={fadeIn}
                   whileHover={{ scale: 1.07, y: -8, boxShadow: "0 8px 32px 0 rgba(34,197,94,0.18)" }}
                   whileTap={{ scale: 0.98 }}
-                  className="bg-white rounded-xl shadow-md overflow-hidden border-t-4 border-emerald-500 p-5 transition-colors duration-200 hover:bg-emerald-50 cursor-pointer group"
+                  className="bg-white rounded-xl shadow-md overflow-hidden border-t-4 border-emerald-500 p-3 sm:p-5 transition-colors duration-200 hover:bg-emerald-50 cursor-pointer group min-w-0 max-w-full"
                   tabIndex={0}
                   aria-label={feature.title}
                 >
                   <motion.div 
                     whileHover={{ rotate: [0, 8, -8, 0], scale: 1.15 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 10 }}
-                    className="inline-block mb-2"
+                    className="inline-block mb-1 sm:mb-2"
                   >
                     {feature.icon}
                   </motion.div>
-                  <h3 className="font-bold text-lg mb-2 group-hover:text-emerald-700 transition-colors duration-200">{feature.title}</h3>
-                  <p className="text-gray-600 text-sm mb-4 group-hover:text-emerald-800 transition-colors duration-200">{feature.desc}</p>
+                  <h3 className="font-bold text-base sm:text-lg mb-1 sm:mb-2 group-hover:text-emerald-700 transition-colors duration-200">{feature.title}</h3>
+                  <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-4 group-hover:text-emerald-800 transition-colors duration-200">{feature.desc}</p>
                   {feature.img}
                 </motion.div>
               ))}
@@ -223,27 +223,27 @@ export default function Landing() {
         </motion.section>
 
         {/* Map Section */}
-        <section id="map" className="w-full px-6 py-16 max-w-6xl mx-auto">
+        <section id="map" className="w-full px-2 sm:px-6 py-8 sm:py-16 max-w-6xl mx-auto">
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
             <div className="flex flex-col md:flex-row">
-              <div className="md:w-1/2 p-6">
-                <div className="h-64 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg flex items-center justify-center">
+              <div className="md:w-1/2 p-3 sm:p-6">
+                <div className="h-32 sm:h-64 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg flex items-center justify-center min-w-0">
                   <div className="text-center">
-                    <FaMapMarkedAlt className="text-blue-500 text-4xl mx-auto mb-4" />
-                    <p className="text-blue-600 font-medium">Interactive Sustainability Map</p>
+                    <FaMapMarkedAlt className="text-blue-500 text-2xl sm:text-4xl mx-auto mb-2 sm:mb-4" />
+                    <p className="text-blue-600 font-medium text-xs sm:text-base">Interactive Sustainability Map</p>
                   </div>
                 </div>
               </div>
-              <div className="md:w-1/2 p-8 flex flex-col justify-center">
-                <h3 className="text-2xl font-bold text-gray-800 mb-4">Find Eco-Friendly Stores</h3>
-                <p className="text-gray-600 mb-6">
+              <div className="md:w-1/2 p-4 sm:p-8 flex flex-col justify-center">
+                <h3 className="text-lg sm:text-2xl font-bold text-gray-800 mb-2 sm:mb-4">Find Eco-Friendly Stores</h3>
+                <p className="text-gray-600 mb-4 sm:mb-6 text-xs sm:text-base">
                   Our map highlights sustainable businesses with green markers and 
                   less sustainable ones with red markers. Make conscious choices wherever you go.
                 </p>
                 <motion.button 
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.98 }}
-                  className="self-start bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-6 py-2 rounded-full shadow-md hover:from-cyan-500 hover:to-blue-500"
+                  className="self-start bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 sm:px-6 py-2 rounded-full shadow-md hover:from-cyan-500 hover:to-blue-500 text-xs sm:text-base"
                   onClick={() => navigate('/login')}
                 >
                   Explore Map
@@ -254,21 +254,21 @@ export default function Landing() {
         </section>
 
         {/* Feedback Section */}
-        <section id="feedback" className="w-full px-6 py-16 max-w-4xl mx-auto">
+        <section id="feedback" className="w-full px-2 sm:px-6 py-8 sm:py-16 max-w-4xl mx-auto">
           <motion.div 
             whileHover={{ scale: 1.01 }}
-            className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl shadow-xl p-8 text-center"
+            className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl shadow-xl p-4 sm:p-8 text-center"
           >
-            <FaCommentDots className="text-white text-4xl mx-auto mb-4" />
-            <h3 className="text-white text-2xl font-bold mb-2">SustainaVoice 💬</h3>
-            <p className="text-emerald-100 mb-6">
+            <FaCommentDots className="text-white text-2xl sm:text-4xl mx-auto mb-2 sm:mb-4" />
+            <h3 className="text-white text-lg sm:text-2xl font-bold mb-1 sm:mb-2">SustainaVoice 💬</h3>
+            <p className="text-emerald-100 mb-4 sm:mb-6 text-xs sm:text-base">
               Your feedback helps us improve and grow our sustainability database. 
               Share your insights to make a real difference.
             </p>
             <motion.button 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold px-8 py-2 rounded-full shadow-lg hover:from-cyan-500 hover:to-blue-500"
+              className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold px-4 sm:px-8 py-2 rounded-full shadow-lg hover:from-cyan-500 hover:to-blue-500 text-xs sm:text-base"
               onClick={() => navigate('/login')}
             >
               Share Feedback
