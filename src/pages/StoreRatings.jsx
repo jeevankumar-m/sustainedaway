@@ -9,7 +9,8 @@ import { getAuth, signOut } from "firebase/auth";
 import "./Dashboard.css";
 import Loader from "../Loader";
 import * as turf from "@turf/turf";
-import { Button, Card, CardContent, Typography, Fab } from '@mui/material';
+import { Button, Card, CardContent, Typography, Fab, TextField } from '@mui/material';
+import { moderateContent, sanitizeText } from '../utils/contentModeration';
 
 // Replace with your Mapbox access token
 mapboxgl.accessToken = "pk.eyJ1IjoiamVldmFua3VtYXIwNiIsImEiOiJjbWE1NXoxZnAwZ3p3MndzZGd1MDV5enVpIn0.td1ijvmrNUL0WFj61KS0lg";
@@ -35,6 +36,8 @@ const StoreRatings = () => {
   const animationFrame = useRef(null);
   const [showTracker, setShowTracker] = useState(false);
   const [nearbyRoutes, setNearbyRoutes] = useState([]);
+  const [comment, setComment] = useState("");
+  const [commentError, setCommentError] = useState("");
 
   // Initialize map
   useEffect(() => {
@@ -122,19 +125,10 @@ const StoreRatings = () => {
                 // Get directions to the store
                 getDirections(store);
 
-                // Create popup
+                // Create popup with enhanced content
                 new mapboxgl.Popup()
                   .setLngLat(coordinates)
-                  .setHTML(`
-                    <div class="store-popup">
-                      <h3>${store.storeName}</h3>
-                      <div class="rating-display">
-                        <span class="stars">${"⭐".repeat(Math.round(store.avgRating))}</span>
-                        <span>${store.avgRating.toFixed(1)}</span>
-                        <span class="rating-count">(${store.ratingCount} ratings)</span>
-                      </div>
-                    </div>
-                  `)
+                  .setHTML(createStorePopup(feature))
                   .addTo(map.current);
               } else {
                 setSelectedStore(null);
@@ -170,15 +164,7 @@ const StoreRatings = () => {
 
               new mapboxgl.Popup()
                 .setLngLat(coordinates)
-                .setHTML(`
-                  <div class="store-popup">
-                    <h3>${store.storeName}</h3>
-                    <div class="rating-display">
-                      <span class="stars">${"⭐".repeat(Math.round(store.avgRating))}</span>
-                      <span>${store.avgRating.toFixed(1)}</span>
-                    </div>
-                  </div>
-                `)
+                .setHTML(createStorePopup(e.features[0]))
                 .addTo(map.current);
             });
 
@@ -224,12 +210,12 @@ const StoreRatings = () => {
     let ratingsData = [];
 
     querySnapshot.forEach((doc) => {
-      ratingsData.push(doc.data());
+      ratingsData.push({ id: doc.id, ...doc.data() });
     });
 
-    // Group stores by location
+    // Group stores by location and calculate averages
     let storeGroups = {};
-    ratingsData.forEach(({ storeName, lat, lng, rating }) => {
+    ratingsData.forEach(({ storeName, lat, lng, rating, comment, timestamp }) => {
       const key = `${storeName}-${lat}-${lng}`;
       if (!storeGroups[key]) {
         storeGroups[key] = {
@@ -237,18 +223,27 @@ const StoreRatings = () => {
           lat,
           lng,
           ratings: [rating],
+          comments: comment ? [comment] : [],
+          timestamps: [timestamp],
           coordinates: [lng, lat]
         };
       } else {
         storeGroups[key].ratings.push(rating);
+        if (comment) storeGroups[key].comments.push(comment);
+        storeGroups[key].timestamps.push(timestamp);
       }
     });
 
     // Calculate averages and prepare GeoJSON
     const geojson = {
       type: "FeatureCollection",
-      features: Object.values(storeGroups).map(({ storeName, coordinates, ratings }) => {
+      features: Object.values(storeGroups).map(({ storeName, coordinates, ratings, comments, timestamps }) => {
         const avgRating = ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
+        // Get the most recent comment
+        const latestComment = comments.length > 0 
+          ? comments[timestamps.indexOf(Math.max(...timestamps))]
+          : null;
+        
         return {
           type: "Feature",
           geometry: {
@@ -257,8 +252,17 @@ const StoreRatings = () => {
           },
           properties: {
             storeName,
-            avgRating,
-            ratingCount: ratings.length
+            avgRating: parseFloat(avgRating.toFixed(1)),
+            ratingCount: ratings.length,
+            latestComment,
+            totalRatings: ratings.length,
+            ratingDistribution: {
+              1: ratings.filter(r => r === 1).length,
+              2: ratings.filter(r => r === 2).length,
+              3: ratings.filter(r => r === 3).length,
+              4: ratings.filter(r => r === 4).length,
+              5: ratings.filter(r => r === 5).length
+            }
           }
         };
       })
@@ -313,7 +317,7 @@ const StoreRatings = () => {
         }
       });
 
-      // Add store markers
+      // Add store markers with color based on average rating
       map.current.addLayer({
         id: "unclustered-point",
         type: "circle",
@@ -327,19 +331,17 @@ const StoreRatings = () => {
             3, "#ffbb33", // 3 stars
             4, "#00C851" // 4-5 stars
           ],
-          "circle-radius": 8,
+          "circle-radius": [
+            "interpolate",
+            ["linear"],
+            ["get", "ratingCount"],
+            1, 6,
+            10, 8,
+            50, 10
+          ],
           "circle-stroke-width": 2,
           "circle-stroke-color": "#fff"
         }
-      });
-
-      // Add popups on hover
-      map.current.on("mouseenter", "unclustered-point", () => {
-        map.current.getCanvas().style.cursor = "pointer";
-      });
-
-      map.current.on("mouseleave", "unclustered-point", () => {
-        map.current.getCanvas().style.cursor = "";
       });
     }
     setLoading(false);
@@ -507,19 +509,44 @@ const StoreRatings = () => {
 
   const handleRatingSubmit = async () => {
     if (!userLocation) return setMessage({ text: "Location not detected!", type: "error" });
-    if (!storeName.trim()) return setMessage({ text: "Please enter a store name!", type: "error" });
+    
+    // Sanitize and moderate store name
+    const sanitizedStoreName = sanitizeText(storeName);
+    const storeNameModeration = moderateContent(sanitizedStoreName);
+    
+    if (!storeNameModeration.isClean) {
+      setMessage({ text: storeNameModeration.reason, type: "error" });
+      return;
+    }
 
-    await addDoc(collection(db, "storeRatings"), {
-      storeName,
-      lat: userLocation.lat,
-      lng: userLocation.lng,
-      rating,
-      timestamp: new Date()
-    });
+    // Sanitize and moderate comment if provided
+    const sanitizedComment = sanitizeText(comment);
+    if (sanitizedComment) {
+      const commentModeration = moderateContent(sanitizedComment);
+      if (!commentModeration.isClean) {
+        setCommentError(commentModeration.reason);
+        return;
+      }
+    }
 
-    setMessage({ text: "Rating submitted successfully!", type: "success" });
-    setStoreName("");
-    fetchStoreRatings();
+    try {
+      await addDoc(collection(db, "storeRatings"), {
+        storeName: sanitizedStoreName,
+        comment: sanitizedComment,
+        lat: userLocation.lat,
+        lng: userLocation.lng,
+        rating,
+        timestamp: new Date()
+      });
+
+      setMessage({ text: "Rating submitted successfully!", type: "success" });
+      setStoreName("");
+      setComment("");
+      setCommentError("");
+      fetchStoreRatings();
+    } catch (error) {
+      setMessage({ text: "Failed to submit rating. Please try again.", type: "error" });
+    }
   };
 
   // Helper to get distance between two points (Haversine formula)
@@ -608,6 +635,20 @@ const StoreRatings = () => {
     setNearbyRoutes(routes);
   };
 
+  // Update the popup content to show more rating details
+  const createStorePopup = (store) => {
+    return `
+      <div class="store-popup">
+        <h3>${store.properties.storeName}</h3>
+        <div class="rating-display">
+          <span class="stars">${"⭐".repeat(Math.round(store.properties.avgRating))}</span>
+          <span>${store.properties.avgRating.toFixed(1)}</span>
+          <span class="rating-count">(${store.properties.totalRatings} ratings)</span>
+        </div>
+      </div>
+    `;
+  };
+
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 via-green-50 to-green-200 overflow-hidden" style={{ fontFamily: 'SF Pro, San Francisco, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif' }}>
       {loading && <Loader />}
@@ -673,7 +714,18 @@ const StoreRatings = () => {
         <div
           ref={mapContainer}
           className="map-container"
-          style={{ width: 600, height: 340, minWidth: 250, minHeight: 200, maxWidth: '90vw', maxHeight: '60vh', borderRadius: 14, margin: '18px 0', position: 'relative' }}
+          style={{
+            width: '100%',
+            maxWidth: 420,
+            minWidth: 250,
+            minHeight: 200,
+            height: 340,
+            maxWidth: '95vw', // Responsive for mobile
+            borderRadius: 14,
+            margin: '18px 0',
+            position: 'relative',
+            boxSizing: 'border-box',
+          }}
         />
         {/* Floating round tracker button */}
         <Fab
@@ -696,12 +748,40 @@ const StoreRatings = () => {
         </Fab>
         {/* Card for selected store info - responsive and always visible */}
         {selectedStore && (
-          <Card className="w-full max-w-lg mb-4 rounded-xl shadow-md z-20 relative" style={{ width: '100%', maxWidth: 420, marginBottom: 16, borderRadius: 10, boxShadow: '0 1px 6px #0001', padding: 0 }}>
+          <Card 
+            className="w-full mb-4 rounded-xl shadow-md z-20 relative"
+            style={{
+              width: 400,
+              minHeight: 340,
+              height: 420,
+              margin: '16px auto',
+              borderRadius: 10,
+              boxShadow: '0 1px 6px #0001',
+              padding: 0,
+              boxSizing: 'border-box',
+              // No maxWidth, no overflow
+            }}
+          >
             <CardContent style={{ padding: 12 }}>
               <Typography variant="subtitle1" style={{ fontWeight: 700, marginBottom: 4, fontSize: 16 }}>{selectedStore.storeName}</Typography>
               <Typography variant="body2" style={{ marginBottom: 4, fontSize: 13 }}>
                 <FaStar className="star-icon" style={{ fontSize: 13, marginRight: 2 }} /> {selectedStore.avgRating?.toFixed(1)} ({selectedStore.ratingCount} ratings)
               </Typography>
+              {selectedStore.comment && (
+                <Typography 
+                  variant="body2" 
+                  style={{ 
+                    marginTop: 8,
+                    padding: 8,
+                    backgroundColor: '#f5f5f5',
+                    borderRadius: 8,
+                    fontSize: 13,
+                    color: '#666'
+                  }}
+                >
+                  "{selectedStore.comment}"
+                </Typography>
+              )}
               {selectedStore.distance && selectedStore.duration && (
                 <div className="route-info flex flex-col gap-1 text-xs sm:text-sm">
                   <div className="route-detail flex flex-row justify-between">
@@ -732,7 +812,7 @@ const StoreRatings = () => {
                 color="primary"
                 size="small"
                 className="w-full mt-2 rounded-lg text-xs sm:text-sm block"
-                style={{ borderRadius: 7, fontSize: 13, padding: '4px 10px', boxSizing: 'border-box', overflow: 'hidden', minWidth: 0, maxWidth: '100%' }}
+                style={{ borderRadius: 7, fontSize: 13, padding: '4px 10px', boxSizing: 'border-box', overflow: 'visible', minWidth: 0, maxWidth: '100%' }}
                 onClick={() => getDirections(selectedStore)}
                 startIcon={<FaDirections style={{ fontSize: 14 }} />}
               >
@@ -756,6 +836,25 @@ const StoreRatings = () => {
             onChange={(e) => setStoreName(e.target.value)}
             className="w-full p-2 mb-2 rounded border border-gray-300 text-sm"
             style={{ fontSize: 13 }}
+          />
+          <TextField
+            multiline
+            rows={3}
+            placeholder="Add a comment (optional)"
+            value={comment}
+            onChange={(e) => {
+              setComment(e.target.value);
+              setCommentError("");
+            }}
+            error={!!commentError}
+            helperText={commentError}
+            className="w-full mb-2"
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                fontSize: '13px',
+                borderRadius: '8px',
+              },
+            }}
           />
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 7 }}>
             {[1, 2, 3, 4, 5].map((star) => (
@@ -862,5 +961,45 @@ const styles = `
 
 .route-value {
   font-weight: 500;
+}
+
+.store-popup {
+  padding: 15px;
+  min-width: 250px;
+}
+
+.rating-distribution {
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.rating-bar {
+  display: flex;
+  align-items: center;
+  margin: 3px 0;
+}
+
+.bar-container {
+  flex: 1;
+  height: 8px;
+  background: #f0f0f0;
+  margin: 0 8px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  background: #4CAF50;
+  border-radius: 4px;
+}
+
+.latest-comment {
+  margin-top: 10px;
+  padding: 8px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  font-style: italic;
+  font-size: 12px;
 }
 `;

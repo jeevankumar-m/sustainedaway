@@ -7,6 +7,20 @@
   width: 100%;
 }
 
+@media (max-width: 600px) {
+  .store-card {
+    width: 95% !important;
+    max-width: 95% !important;
+    bottom: 10px !important;
+    max-height: 55vh !important;
+  }
+}
+
+/* Adjust the content container to account for the fixed card */
+.content {
+  padding-bottom: 300px !important; /* Add space at bottom for the card */
+}
+
 .content {
   padding: 20px;
   margin-left: 60px;
