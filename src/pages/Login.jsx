@@ -134,13 +134,12 @@ const Login = () => {
             transition={{ duration: 0.7, ease: 'easeOut' }}
             className="bg-white/30 backdrop-blur-lg border border-white/40 shadow-2xl rounded-3xl px-6 py-8 flex flex-col items-center"
           >
-            <div className="w-20 h-20 mb-4 flex items-center justify-center bg-white/40 rounded-full shadow-lg">
-              <img 
-                src="./favicon.ico" 
-                alt="Earth" 
-                className="w-16 h-16 object-contain animate-float"
-              />
-            </div>
+   {/* Logo - Earth image only, no background circle */}
+   <img 
+     src="./favicon.ico" 
+     alt="Earth" 
+     className="w-24 h-24 mb-4 object-contain animate-float mx-auto"
+   />
             <h1 className="text-3xl font-bold text-green-800 mb-1 tracking-tight">Sustainedaway</h1>
             <p className="text-green-700 text-base mb-6 font-medium text-center">
               {isRegistering ? "Join our sustainable journey" : "Welcome back!"}
