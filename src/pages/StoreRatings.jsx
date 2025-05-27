@@ -609,40 +609,66 @@ const StoreRatings = () => {
   };
 
   return (
-    <div className="dashboard">
+    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 via-green-50 to-green-200 overflow-hidden" style={{ fontFamily: 'SF Pro, San Francisco, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif' }}>
       {loading && <Loader />}
       {mapError && (
         <div className="error-message">
           Map Error: {mapError}
         </div>
       )}
-      {/* Top Bar */}
-      <div className="top-bar">
-        <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)}>
-          <FaBars />
-        </button>
-        <h2 className="title">⭐ Store Ratings</h2>
-        <button className="sign-out-button" onClick={() => signOut(auth).then(() => navigate("/login"))}>
-          <FaSignOutAlt />
-        </button>
+      {/* Full-width Enhanced Top Bar */}
+      <div className="fixed top-0 left-0 w-full z-20">
+        <div className="w-full flex items-center justify-between px-8 py-2 bg-gradient-to-r from-green-500 via-green-400 to-blue-300/80 backdrop-blur-lg shadow-lg border-b-2 border-green-200/40" style={{ minHeight: 60, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
+          <button className="menu-button !text-white" onClick={() => setMenuOpen(!menuOpen)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+            <FaBars size={24} />
+          </button>
+          <h2 className="font-semibold tracking-tight text-white drop-shadow-lg" style={{ fontFamily: 'inherit', fontSize: '1.1rem', letterSpacing: '-0.01em', margin: 0 }}>
+            Store Ratings
+          </h2>
+          <button className="sign-out-button !text-white" onClick={() => signOut(auth).then(() => navigate("/login"))} style={{ background: 'none', border: 'none', cursor: 'pointer', width: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <FaSignOutAlt size={24} />
+          </button>
+        </div>
       </div>
 
-      {/* Side Menu */}
-      <div className={`side-menu ${menuOpen ? "open" : ""}`}>
-        <ul>
-          <li onClick={() => { setMenuOpen(false); navigate("/dashboard"); }}> <FaCamera /> Scanner </li>
-          <li onClick={() => { setMenuOpen(false); navigate("/bill-scanner"); }}> <FaFileInvoice /> Bill Scanner </li>
-          <li onClick={() => { setMenuOpen(false); navigate("/store-ratings"); }}> <FaStore /> Store Ratings </li>
-          <li onClick={() => { setMenuOpen(false); navigate("/sustainavoice"); }}> <FaComments /> SustainaVoice </li>
-          <li onClick={() => { setMenuOpen(false); navigate("/history"); }}> <FaHistory /> History </li>
-          <li className="logout" onClick={() => signOut(auth).then(() => navigate("/login"))}>
-            <FaSignOutAlt /> Sign Out
+      {/* Floating Side Menu */}
+      <div className={`side-menu ${menuOpen ? "open" : ""} z-30 fixed left-0 top-20`}>
+        <ul className="pt-6 pb-4 px-2">
+          <li onClick={() => { setMenuOpen(false); navigate("/dashboard"); }} className="mb-2">
+            <span className="flex items-center gap-2 font-semibold text-base text-green-800 hover:bg-green-100/60 px-3 py-2 rounded-xl transition-all">
+              <FaCamera /> Scanner
+            </span>
+          </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/bill-scanner"); }} className="mb-2">
+            <span className="flex items-center gap-2 font-semibold text-base text-green-800 hover:bg-green-100/60 px-3 py-2 rounded-xl transition-all">
+              <FaFileInvoice /> Bill Scanner
+            </span>
+          </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/store-ratings"); }} className="active mb-2">
+            <span className="flex items-center gap-2 font-bold text-base text-white bg-gradient-to-r from-green-500 to-green-700 px-3 py-2 rounded-xl shadow-md">
+              <FaStore /> Store Ratings
+            </span>
+          </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/sustainavoice"); }} className="mb-2">
+            <span className="flex items-center gap-2 font-semibold text-base text-green-800 hover:bg-green-100/60 px-3 py-2 rounded-xl transition-all">
+              <FaComments /> SustainaVoice
+            </span>
+          </li>
+          <li onClick={() => { setMenuOpen(false); navigate("/history"); }} className="mb-2">
+            <span className="flex items-center gap-2 font-semibold text-base text-green-800 hover:bg-green-100/60 px-3 py-2 rounded-xl transition-all">
+              <FaHistory /> History
+            </span>
+          </li>
+          <li onClick={() => signOut(auth).then(() => navigate("/login"))} className="mt-4">
+            <span className="flex items-center gap-2 font-semibold text-base text-red-700 hover:bg-red-100/60 px-3 py-2 rounded-xl transition-all">
+              <FaSignOutAlt /> Sign Out
+            </span>
           </li>
         </ul>
       </div>
 
       {/* Map & Rating Box */}
-      <div className="content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div className="content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 80 }}>
         {/* Fixed size map container */}
         <div
           ref={mapContainer}
