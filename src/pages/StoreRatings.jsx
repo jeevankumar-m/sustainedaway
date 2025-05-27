@@ -668,8 +668,8 @@ const StoreRatings = () => {
       </div>
 
       {/* Map & Rating Box */}
-      <div className="content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 80 }}>
-        {/* Fixed size map container */}
+      <div className="content w-full flex flex-col items-center mt-20 px-2 sm:px-4" style={{ marginTop: 80 }}>
+        {/* Responsive map container */}
         <div
           ref={mapContainer}
           className="map-container"
@@ -683,8 +683,8 @@ const StoreRatings = () => {
           onClick={handleShowTracker}
           style={{
             position: 'absolute',
-            right: 40,
-            bottom: 40,
+            right: 20,
+            bottom: 20,
             zIndex: 10,
             boxShadow: '0 2px 8px #0002',
             background: showTracker ? '#43a047' : 'white',
@@ -696,27 +696,29 @@ const StoreRatings = () => {
         </Fab>
         {/* Card for selected store info */}
         {selectedStore && (
-          <Card style={{ width: 300, maxWidth: '95vw', marginBottom: 16, borderRadius: 10, boxShadow: '0 1px 6px #0001', padding: 0 }}>
+          <Card className="w-full max-w-lg mb-4 rounded-xl shadow-md" style={{ width: '100%', maxWidth: 420, marginBottom: 16, borderRadius: 10, boxShadow: '0 1px 6px #0001', padding: 0 }}>
             <CardContent style={{ padding: 12 }}>
               <Typography variant="subtitle1" style={{ fontWeight: 700, marginBottom: 4, fontSize: 16 }}>{selectedStore.storeName}</Typography>
               <Typography variant="body2" style={{ marginBottom: 4, fontSize: 13 }}>
                 <FaStar className="star-icon" style={{ fontSize: 13, marginRight: 2 }} /> {selectedStore.avgRating?.toFixed(1)} ({selectedStore.ratingCount} ratings)
               </Typography>
               {selectedStore.distance && selectedStore.duration && (
-                <div className="route-info" style={{ fontSize: 13 }}>
-                  <div className="route-detail">
-                    <span className="route-label">Distance:</span>
+                <div className="route-info flex flex-col gap-1 text-xs sm:text-sm">
+                  <div className="route-detail flex flex-row justify-between">
+                    <span className="route-label font-semibold">Distance:</span>
                     <span className="route-value">{selectedStore.distance}</span>
                   </div>
-                  <div className="route-detail">
-                    <span className="route-label">Walking Time:</span>
+                  <div className="route-detail flex flex-row justify-between">
+                    <span className="route-label font-semibold">Walking Time:</span>
                     <span className="route-value">{selectedStore.duration}</span>
                   </div>
                   {selectedStore.suggestedMode && (
-                    <div className="suggestion-box" style={{ fontSize: 12, padding: 8, marginTop: 8 }}>
-                      <h4 style={{ fontSize: 13, margin: 0, color: '#2E7D32' }}>🌱 Sustainable Travel Suggestion</h4>
-                      <p style={{ margin: '4px 0 0 0', color: '#333' }}>{selectedStore.suggestionReason}</p>
-                      <div className="mode-icon" style={{ fontSize: 18, marginTop: 4, textAlign: 'center' }}>
+                    <div className="suggestion-box w-full mt-2 p-3 rounded-xl bg-green-50 text-xs sm:text-base flex flex-col items-start sm:items-center" style={{ minWidth: 0, wordBreak: 'break-word' }}>
+                      <h4 className="font-bold text-green-700 flex items-center gap-1 text-base mb-1 w-full text-left sm:text-center" style={{ fontSize: 15, margin: 0 }}>
+                        🌱 Sustainable Travel Suggestion
+                      </h4>
+                      <p className="mt-1 mb-0 text-gray-700 w-full text-left sm:text-center" style={{ fontSize: 14 }}>{selectedStore.suggestionReason}</p>
+                      <div className="mode-icon text-2xl mt-2 text-center w-full">
                         {selectedStore.suggestedMode === 'walking' && '🚶'}
                         {selectedStore.suggestedMode === 'bicycling' && '🚲'}
                         {selectedStore.suggestedMode === 'transit' && '🚌'}
@@ -729,7 +731,8 @@ const StoreRatings = () => {
                 variant="outlined"
                 color="primary"
                 size="small"
-                style={{ marginTop: 10, borderRadius: 7, fontSize: 13, padding: '4px 10px' }}
+                className="w-full mt-2 rounded-lg text-xs sm:text-sm"
+                style={{ borderRadius: 7, fontSize: 13, padding: '4px 10px' }}
                 onClick={() => getDirections(selectedStore)}
                 startIcon={<FaDirections style={{ fontSize: 14 }} />}
               >
@@ -738,9 +741,9 @@ const StoreRatings = () => {
             </CardContent>
           </Card>
         )}
-        {/* Rating Form (kept as before, but compact) */}
-        <div className="rating-box" style={{ width: 300, maxWidth: '95vw', padding: 12, borderRadius: 10, background: 'white', boxShadow: '0 1px 6px #0001', marginBottom: 16 }}>
-          <h3 style={{ fontSize: 15, marginBottom: 8 }}>Rate This Location</h3>
+        {/* Rating Form (kept as before, but compact and responsive) */}
+        <div className="rating-box w-full max-w-xs sm:max-w-sm md:max-w-md p-3 rounded-xl bg-white shadow mb-4">
+          <h3 className="text-base font-semibold mb-2">Rate This Location</h3>
           {message.text && (
             <p className={message.type === "error" ? "error-message" : "success-message"} style={{ fontSize: 12, marginBottom: 8 }}>
               {message.text}
@@ -751,20 +754,30 @@ const StoreRatings = () => {
             placeholder="Enter store name"
             value={storeName}
             onChange={(e) => setStoreName(e.target.value)}
-            style={{ width: '100%', padding: 7, marginBottom: 7, borderRadius: 6, border: '1px solid #ddd', fontSize: 13 }}
+            className="w-full p-2 mb-2 rounded border border-gray-300 text-sm"
+            style={{ fontSize: 13 }}
           />
-          <select value={rating} onChange={(e) => setRating(parseInt(e.target.value))} style={{ width: '100%', padding: 7, marginBottom: 7, borderRadius: 6, border: '1px solid #ddd', fontSize: 13 }}>
-            <option value="1">⭐ 1</option>
-            <option value="2">⭐⭐ 2</option>
-            <option value="3">⭐⭐⭐ 3</option>
-            <option value="4">⭐⭐⭐⭐ 4</option>
-            <option value="5">⭐⭐⭐⭐⭐ 5</option>
-          </select>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 7 }}>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <FaStar
+                key={star}
+                onClick={() => setRating(star)}
+                style={{
+                  cursor: 'pointer',
+                  color: star <= rating ? '#FFD700' : '#E0E0E0',
+                  fontSize: 22,
+                  marginRight: 2
+                }}
+                className="transition-colors duration-150"
+              />
+            ))}
+          </div>
           <Button
             variant="contained"
             color="success"
             size="small"
-            style={{ width: '100%', borderRadius: 7, fontSize: 13, padding: '6px 0', fontWeight: 600 }}
+            className="w-full mt-1 rounded-lg text-xs sm:text-sm"
+            style={{ borderRadius: 7, fontSize: 13, padding: '6px 0', fontWeight: 600 }}
             onClick={handleRatingSubmit}
           >
             Submit Rating
