@@ -668,7 +668,7 @@ const StoreRatings = () => {
       </div>
 
       {/* Map & Rating Box */}
-      <div className="content w-full flex flex-col items-center mt-20 px-2 sm:px-4" style={{ marginTop: 80 }}>
+      <div className="content w-full flex flex-col items-center mt-20 px-2 sm:px-4 overflow-y-auto" style={{ marginTop: 80, maxHeight: 'calc(100vh - 100px)' }}>
         {/* Responsive map container */}
         <div
           ref={mapContainer}
@@ -694,9 +694,9 @@ const StoreRatings = () => {
         >
           <FaLeaf style={{ fontSize: 22 }} />
         </Fab>
-        {/* Card for selected store info */}
+        {/* Card for selected store info - responsive and always visible */}
         {selectedStore && (
-          <Card className="w-full max-w-lg mb-4 rounded-xl shadow-md" style={{ width: '100%', maxWidth: 420, marginBottom: 16, borderRadius: 10, boxShadow: '0 1px 6px #0001', padding: 0 }}>
+          <Card className="w-full max-w-lg mb-4 rounded-xl shadow-md z-20 relative" style={{ width: '100%', maxWidth: 420, marginBottom: 16, borderRadius: 10, boxShadow: '0 1px 6px #0001', padding: 0 }}>
             <CardContent style={{ padding: 12 }}>
               <Typography variant="subtitle1" style={{ fontWeight: 700, marginBottom: 4, fontSize: 16 }}>{selectedStore.storeName}</Typography>
               <Typography variant="body2" style={{ marginBottom: 4, fontSize: 13 }}>
