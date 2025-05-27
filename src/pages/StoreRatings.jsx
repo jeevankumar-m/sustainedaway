@@ -425,13 +425,13 @@ const StoreRatings = () => {
         
         if (distance <= 1) {
           suggestedMode = 'walking';
-          suggestionReason = 'This location is within walking distance (less than 1 km). Walking is the most sustainable option for short distances.';
+          suggestionReason = 'This location is within walking distance (less than 1 km). Walking is the most sustainable option for short distances. Taking you to the MAP...';
         } else if (distance <= 5) {
           suggestedMode = 'bicycling';
-          suggestionReason = 'This location is perfect for cycling (1-5 km). Cycling is a great sustainable option for medium distances.';
+          suggestionReason = 'This location is perfect for cycling (1-5 km). Cycling is a great sustainable option for medium distances. Taking you to the MAP...';
         } else {
           suggestedMode = 'transit';
-          suggestionReason = 'This location is a bit far. Consider using public transportation to reduce your carbon footprint.';
+          suggestionReason = 'This location is a bit far. Consider using public transportation to reduce your carbon footprint. Taking you to the MAP...';
         }
 
         // Display route on map
@@ -776,16 +776,15 @@ const StoreRatings = () => {
         {/* Card for selected store info - responsive and always visible */}
         {selectedStore && (
           <Card 
-            className="w-full mb-4 rounded-xl shadow-md z-20 relative"
+            className="w-full max-w-[90vw] sm:max-w-sm md:max-w-md mb-4 rounded-xl shadow-md z-20 relative"
             style={{
-              width: 400,
-              minHeight: 340,
-              height: 420,
               margin: '16px auto',
               borderRadius: 10,
               boxShadow: '0 1px 6px #0001',
               padding: 0,
               boxSizing: 'border-box',
+              minHeight: 340,
+              height: 420,
             }}
           >
             <CardContent style={{ padding: 12 }}>
@@ -848,7 +847,7 @@ const StoreRatings = () => {
           </Card>
         )}
         {/* Rating Form (kept as before, but compact and responsive) */}
-        <div className="rating-box w-full max-w-xs sm:max-w-sm md:max-w-md p-3 rounded-xl bg-white shadow mb-4">
+        <div className="rating-box w-full max-w-[90vw] sm:max-w-sm md:max-w-md p-3 rounded-xl bg-white shadow mb-4">
           <h3 className="text-base font-semibold mb-2">Rate This Location</h3>
           {message.text && (
             <p className={message.type === "error" ? "error-message" : "success-message"} style={{ fontSize: 12, marginBottom: 8 }}>
