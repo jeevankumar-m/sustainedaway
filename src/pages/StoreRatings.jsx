@@ -38,6 +38,7 @@ const StoreRatings = () => {
   const [nearbyRoutes, setNearbyRoutes] = useState([]);
   const [comment, setComment] = useState("");
   const [commentError, setCommentError] = useState("");
+  const [directionsShown, setDirectionsShown] = useState(false);
 
   // Initialize map
   useEffect(() => {
@@ -649,6 +650,32 @@ const StoreRatings = () => {
     `;
   };
 
+  useEffect(() => {
+    setDirectionsShown(false);
+  }, [selectedStore]);
+
+  const handleDirectionsClick = () => {
+    if (!directionsShown) {
+      getDirections(selectedStore);
+      setDirectionsShown(true);
+      setTimeout(() => {
+        if (userLocation && selectedStore) {
+          const origin = `${userLocation.lat},${userLocation.lng}`;
+          const destination = `${selectedStore.lat},${selectedStore.lng}`;
+          const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=walking`;
+          window.open(url, '_blank');
+        }
+      }, 3000);
+    } else {
+      if (userLocation && selectedStore) {
+        const origin = `${userLocation.lat},${userLocation.lng}`;
+        const destination = `${selectedStore.lat},${selectedStore.lng}`;
+        const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=walking`;
+        window.open(url, '_blank');
+      }
+    }
+  };
+
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 via-green-50 to-green-200 overflow-hidden" style={{ fontFamily: 'SF Pro, San Francisco, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif' }}>
       {loading && <Loader />}
@@ -759,7 +786,6 @@ const StoreRatings = () => {
               boxShadow: '0 1px 6px #0001',
               padding: 0,
               boxSizing: 'border-box',
-              // No maxWidth, no overflow
             }}
           >
             <CardContent style={{ padding: 12 }}>
@@ -813,7 +839,7 @@ const StoreRatings = () => {
                 size="small"
                 className="w-full mt-2 rounded-lg text-xs sm:text-sm block"
                 style={{ borderRadius: 7, fontSize: 13, padding: '4px 10px', boxSizing: 'border-box', overflow: 'visible', minWidth: 0, maxWidth: '100%' }}
-                onClick={() => getDirections(selectedStore)}
+                onClick={handleDirectionsClick}
                 startIcon={<FaDirections style={{ fontSize: 14 }} />}
               >
                 Get Directions
