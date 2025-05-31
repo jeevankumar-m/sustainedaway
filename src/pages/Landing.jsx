@@ -242,7 +242,7 @@ export default function Landing() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="bg-white/20 backdrop-blur-md text-white rounded-full px-5 py-2 text-sm font-medium shadow-md border border-white/30 hover:bg-white/30 transition-all"
+            className="bg-white/20 backdrop-blur-md text-emerald-600 rounded-full px-5 py-2 text-sm font-medium shadow-md border border-white/30 hover:bg-white/30 transition-all"
             onClick={() => navigate("/login")}
           >
             Login
@@ -454,7 +454,7 @@ export default function Landing() {
 
       {/* Map Section */}
       <AnimatedSection id="map">
-        <section className="w-full px-4 py-16 md:py-24 mb-20 ">
+        <section className="w-full px-4 py-16 md:py-24">
           <div className="container mx-auto max-w-6xl">
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
               <div className="flex flex-col md:flex-row">
@@ -542,8 +542,8 @@ export default function Landing() {
       </AnimatedSection>
 
       {/* Feedback Section */}
-      <AnimatedSection id="feedback" className="mt-16">
-        <section className="w-full px-4 py-16 md:py-24 mt-20 bg-gradient-to-b from-transparent to-emerald-50">
+      <AnimatedSection id="feedback">
+        <section className="w-full px-4 py-16 md:py-24 mt-3 bg-gradient-to-b from-transparent to-emerald-50">
           <div className="container mx-auto max-w-4xl">
             <motion.div
               variants={fadeIn}
