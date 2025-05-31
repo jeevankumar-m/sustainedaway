@@ -743,7 +743,6 @@ const StoreRatings = () => {
           className="map-container"
           style={{
             width: '100%',
-            maxWidth: 420,
             minWidth: 250,
             minHeight: 200,
             height: 340,
