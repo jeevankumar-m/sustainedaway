@@ -1,4 +1,5 @@
 const admin = require("firebase-admin");
+//this comment is to commit it to git lol
 // Create a File named serviceAccountKey.json.json in the root directory and paste your firebase serviceaccounts credentials
 const serviceAccount = require("./serviceAccountKey.json"); 
 const express = require("express");

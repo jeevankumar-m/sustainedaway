@@ -149,18 +149,30 @@ const History = () => {
             <h1 className="font-bold text-green-800">History</h1>
           </div>
 
-          <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center">
-            {auth.currentUser?.photoURL ? (
-              <img
-                src={auth.currentUser.photoURL}
-                alt="Profile"
-                className="w-8 h-8 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-medium text-sm">
-                {auth.currentUser?.displayName?.charAt(0) || "U"}
-              </div>
-            )}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                signOut(auth);
+                navigate("/login");
+              }}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+            >
+              <FaSignOutAlt className="text-sm" />
+              <span className="text-sm font-medium">Logout</span>
+            </button>
+            <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center">
+              {auth.currentUser?.photoURL ? (
+                <img
+                  src={auth.currentUser.photoURL}
+                  alt="Profile"
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-medium text-sm">
+                  {auth.currentUser?.displayName?.charAt(0) || "U"}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
