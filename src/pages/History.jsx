@@ -475,10 +475,19 @@ const History = () => {
                         }`}
                       >
                         <div className="bg-green-50 rounded-lg p-3">
-                          <p className="text-gray-700 text-sm">
-                            {item.recyclingtips ||
-                              "No recycling tips available for this product."}
-                          </p>
+                          {item.recyclingtips ? (
+                            <ul className="list-disc pl-4 space-y-1">
+                              {item.recyclingtips.split(/[0-9]+\.\s*/).filter(Boolean).map((tip, index) => (
+                                <li key={index} className="text-gray-700 text-sm">
+                                  {tip.trim()}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="text-gray-700 text-sm">
+                              No recycling tips available for this product.
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
