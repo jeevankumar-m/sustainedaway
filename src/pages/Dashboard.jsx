@@ -224,7 +224,7 @@ const Dashboard = () => {
 
     try {
       const response = await fetch(
-        "https://sustainedaway-backend-wjom.onrender.com/api/process-image",
+        "http://localhost:5000/api/process-image",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

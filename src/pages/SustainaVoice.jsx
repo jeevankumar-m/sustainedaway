@@ -21,6 +21,7 @@ import {
 } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import BackgroundIcons from "../BackgroundIcons";
+import { moderateUserContent } from "../utils/contentModeration";
 
 const SustainaVoice = () => {
   // State variables
@@ -141,12 +142,21 @@ const SustainaVoice = () => {
   // Form submission handler
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (
-      feedback.trim() === "" ||
-      productName.trim() === "" ||
-      !auth.currentUser
-    )
+    if (!auth.currentUser) return;
+
+    // Moderate product name
+    const productNameModeration = moderateUserContent(productName, 'voice');
+    if (!productNameModeration.isClean) {
+      alert(productNameModeration.reason);
       return;
+    }
+
+    // Moderate feedback content
+    const feedbackModeration = moderateUserContent(feedback, 'voice');
+    if (!feedbackModeration.isClean) {
+      alert(feedbackModeration.reason);
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -159,13 +169,13 @@ const SustainaVoice = () => {
         compressedImage = await compressImage(productImage);
       }
 
-      // Save to Firestore
+      // Save to Firestore with sanitized content
       const feedbackData = {
         userId: user.uid,
         userEmail: user.email,
-        productName,
+        productName: productNameModeration.sanitizedContent,
         feedbackType,
-        feedback,
+        feedback: feedbackModeration.sanitizedContent,
         productImage,
         createdAt: serverTimestamp(),
       };
@@ -205,12 +215,12 @@ const SustainaVoice = () => {
         default: "Feedback",
       };
 
-      // Create tweet text
+      // Create tweet text with sanitized content
       const tweetText = `${
         feedbackTypeLabels[feedbackType] || feedbackTypeLabels.default
       } about ${
-        productName || "a product"
-      } from @Sustainedaway user:\n\n"${feedback.substring(
+        productNameModeration.sanitizedContent || "a product"
+      } from @Sustainedaway user:\n\n"${feedbackModeration.sanitizedContent.substring(
         0,
         180
       )}"\n\n${generateHashtags()}`;
@@ -242,13 +252,19 @@ const SustainaVoice = () => {
     };
   }, []);
 
-  // Handle feedback text change
+  // Handle feedback text change with moderation
   const handleFeedbackChange = (e) => {
     const content = e.target.value;
     if (content.length <= MAX_CHARACTERS) {
       setFeedback(content);
       setCharacterCount(content.length);
     }
+  };
+
+  // Handle product name change with moderation
+  const handleProductNameChange = (e) => {
+    const content = e.target.value;
+    setProductName(content);
   };
 
   // Handle file upload from device
@@ -552,7 +568,7 @@ const SustainaVoice = () => {
                     id="product-name"
                     type="text"
                     value={productName}
-                    onChange={(e) => setProductName(e.target.value)}
+                    onChange={handleProductNameChange}
                     placeholder="e.g. Bamboo Toothbrush"
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
                     required
