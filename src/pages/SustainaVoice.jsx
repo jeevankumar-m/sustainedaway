@@ -21,7 +21,6 @@ import {
 } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import BackgroundIcons from "../BackgroundIcons";
-import { moderateUserContent } from "../utils/contentModeration";
 
 const SustainaVoice = () => {
   // State variables
@@ -144,20 +143,6 @@ const SustainaVoice = () => {
     e.preventDefault();
     if (!auth.currentUser) return;
 
-    // Moderate product name
-    const productNameModeration = moderateUserContent(productName, 'voice');
-    if (!productNameModeration.isClean) {
-      alert(productNameModeration.reason);
-      return;
-    }
-
-    // Moderate feedback content
-    const feedbackModeration = moderateUserContent(feedback, 'voice');
-    if (!feedbackModeration.isClean) {
-      alert(feedbackModeration.reason);
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
@@ -169,13 +154,13 @@ const SustainaVoice = () => {
         compressedImage = await compressImage(productImage);
       }
 
-      // Save to Firestore with sanitized content
+      // Save to Firestore
       const feedbackData = {
         userId: user.uid,
         userEmail: user.email,
-        productName: productNameModeration.sanitizedContent,
+        productName,
         feedbackType,
-        feedback: feedbackModeration.sanitizedContent,
+        feedback,
         productImage,
         createdAt: serverTimestamp(),
       };
@@ -215,12 +200,12 @@ const SustainaVoice = () => {
         default: "Feedback",
       };
 
-      // Create tweet text with sanitized content
+      // Create tweet text
       const tweetText = `${
         feedbackTypeLabels[feedbackType] || feedbackTypeLabels.default
       } about ${
-        productNameModeration.sanitizedContent || "a product"
-      } from @Sustainedaway user:\n\n"${feedbackModeration.sanitizedContent.substring(
+        productName || "a product"
+      } from @Sustainedaway user:\n\n"${feedback.substring(
         0,
         180
       )}"\n\n${generateHashtags()}`;
@@ -252,7 +237,7 @@ const SustainaVoice = () => {
     };
   }, []);
 
-  // Handle feedback text change with moderation
+  // Handle feedback text change
   const handleFeedbackChange = (e) => {
     const content = e.target.value;
     if (content.length <= MAX_CHARACTERS) {
@@ -261,7 +246,7 @@ const SustainaVoice = () => {
     }
   };
 
-  // Handle product name change with moderation
+  // Handle product name change
   const handleProductNameChange = (e) => {
     const content = e.target.value;
     setProductName(content);
