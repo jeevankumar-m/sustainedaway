@@ -129,7 +129,7 @@ const BillScanner = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/process-bill",
+        "https://sustainedaway-backend-gulo.onrender.com/api/process-bill",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

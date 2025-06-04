@@ -224,7 +224,7 @@ const Dashboard = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/process-image",
+        "https://sustainedaway-backend-gulo.onrender.com/api/process-image",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
