@@ -11,19 +11,19 @@ const SDGGoals = () => {
     {
       id: 3,
       title: "Good Health and Well-being",
-      image: "https://res.cloudinary.com/dgfepyx8a/image/upload/v1742660879/y4zyzavzrhyciq0ukzq5.jpg",
+      image: "https://res.cloudinary.com/dgfepyx8a/image/upload/v1749020817/REGISTRATIONDONOTDELETE/epa2saneaxckcnwi8bpq.jpg",
       description: "Ensure healthy lives and promote well-being for all at all ages.",
     },
     {
       id: 12,
       title: "Responsible Consumption and Production",
-      image: "https://res.cloudinary.com/dgfepyx8a/image/upload/v1742660989/zwlsgcjovdrsxou82yhq.jpg",
+      image: "https://res.cloudinary.com/dgfepyx8a/image/upload/v1749020812/REGISTRATIONDONOTDELETE/anofqkwgwamcvjzn2i00.jpg",
       description: "Ensure sustainable consumption and production patterns.",
     },
     {
       id: 13,
       title: "Climate Action",
-      image: "https://res.cloudinary.com/dgfepyx8a/image/upload/v1742661083/wsbcfpxpvzgxq7a6tu35.png",
+      image: "https://res.cloudinary.com/dgfepyx8a/image/upload/v1749020812/REGISTRATIONDONOTDELETE/ccumk6cgkvkzlysizrcz.jpg",
       description: "Take urgent action to combat climate change and its impacts.",
     },
   ];
@@ -117,12 +117,16 @@ const styles = {
     padding: "15px",
     borderRadius: "15px",
     boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
   },
   goalImage: {
     width: "120px",
     height: "120px",
     borderRadius: "10px",
     marginBottom: "15px",
+    objectFit: "cover",
   },
   goalTitle: {
     fontSize: "1.2rem",
