@@ -80,34 +80,45 @@ const History = () => {
 
   useEffect(() => {
     const user = auth.currentUser;
-    if (!user) return;
+    if (!user) {
+      navigate('/login');
+      return;
+    }
 
     setLoading(true);
     const historyRef = collection(db, "history");
     const q = query(
       historyRef,
-      where("userId", "==", user.uid),
-      orderBy("dateScanned", "desc")
+      where("userId", "==", user.uid)
     );
 
+    // Set up real-time listener
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const historyData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        const historyData = snapshot.docs
+          .map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+            dateScanned: doc.data().dateScanned?.toDate() || new Date()
+          }))
+          // Sort the data client-side
+          .sort((a, b) => b.dateScanned - a.dateScanned);
+        
         setHistory(historyData);
         setLoading(false);
       },
       (error) => {
         console.error("Error fetching history:", error);
         setLoading(false);
+        setHistory([]);
       }
     );
 
-    return () => unsubscribe();
-  }, [auth]);
+    return () => {
+      unsubscribe();
+    };
+  }, [auth, navigate]);
 
   const handleSignOut = async () => {
     try {
@@ -416,7 +427,7 @@ const History = () => {
                         <div className="text-xs text-gray-500 mt-2">
                           Scanned on{" "}
                           {item.dateScanned
-                            ? item.dateScanned.toDate().toLocaleString()
+                            ? item.dateScanned.toLocaleString()
                             : "unknown date"}
                         </div>
                       </div>

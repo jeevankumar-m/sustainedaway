@@ -228,7 +228,11 @@ const Dashboard = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ base64Image }),
+          body: JSON.stringify({ 
+            base64Image,
+            userId: auth.currentUser.uid,
+            imageUrl: imageUrl
+          }),
         }
       );
 
@@ -237,38 +241,34 @@ const Dashboard = () => {
       if (data.error) {
         setResponseData({ error: data.error });
       } else {
+        const historyData = {
+          productName: data["Product Name"] || "Unknown Product",
+          brand: data["Brand"] || "Unknown Brand",
+          sustainabilityScore: parseFloat(data["Sustainability Rating"]) || 0,
+          packagingMaterial: data["Packaging Material"] || "Not available",
+          ingredientsImpact: data["Ingredients Impact"] || "Not available",
+          recyclingFeasibility: data["Recycling Feasibility"] || "Not available",
+          healthimpact: data["Health Impact"] || null,
+          recyclingtips: data["Recycling Tips"] || null,
+          imageUrl: imageUrl,
+          dateScanned: new Date(),
+          userId: auth.currentUser.uid
+        };
+
+        try {
+          await addDoc(collection(db, "history"), historyData);
+          console.log("History saved successfully");
+        } catch (error) {
+          console.error("Error saving history:", error);
+        }
+
         setResponseData(data);
-        saveHistoryToFirestore(data, imageUrl);
       }
     } catch (error) {
+      console.error("Error processing image:", error);
       setResponseData({ error: "Failed to process the image" });
     } finally {
       setProcessing(false);
-    }
-  };
-
-  const saveHistoryToFirestore = async (aiResponse, imageUrl) => {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    try {
-      await addDoc(collection(db, "history"), {
-        userId: user.uid,
-        productName: aiResponse["Product Name"] || "Unknown Product",
-        brand: aiResponse["Brand"] || "Unknown Brand",
-        sustainabilityScore: aiResponse["Sustainability Rating"] || "N/A",
-        alternativeOptions: aiResponse["Alternative Options"],
-        carbonFootprint: aiResponse["Carbon Footprint"],
-        ingredientsImpact: aiResponse["Ingredients Impact"],
-        packagingMaterial: aiResponse["Packaging Material"],
-        recyclingFeasibility: aiResponse["Recycling Feasibility"],
-        recyclingtips: aiResponse["Recycling Tips"] || "No Tips Available",
-        healthimpact: aiResponse["Health Impact"] || "N/A",
-        imageUrl: imageUrl,
-        dateScanned: serverTimestamp(),
-      });
-    } catch (error) {
-      console.error("Error saving history:", error);
     }
   };
 

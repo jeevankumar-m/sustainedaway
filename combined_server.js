@@ -92,7 +92,7 @@ app.get("/", (req, res) => {
 app.post("/api/process-image", async (req, res) => {
   console.log("🔍 Received Image for Processing...");
 
-  const { base64Image } = req.body;
+  const { base64Image, userId, imageUrl } = req.body;
   if (!base64Image) {
     return res.status(400).json({ error: "No image provided." });
   }
@@ -122,9 +122,24 @@ app.post("/api/process-image", async (req, res) => {
           throw new Error("Invalid response format.");
         }
 
-        // Store in Firestore
-        const docRef = await db.collection("history").add(jsonResponse);
-        console.log(`📌 Data saved to Firestore with ID: ${docRef.id}`);
+        // Structure the data for Firestore
+        const historyData = {
+          productName: jsonResponse["Product Name"] || "Unknown Product",
+          brand: jsonResponse["Brand"] || "Unknown Brand",
+          sustainabilityScore: parseFloat(jsonResponse["Sustainability Rating"]) || 0,
+          packagingMaterial: jsonResponse["Packaging Material"] || "Not available",
+          ingredientsImpact: jsonResponse["Ingredients Impact"] || "Not available",
+          recyclingFeasibility: jsonResponse["Recycling Feasibility"] || "Not available",
+          healthimpact: jsonResponse["Health Impact"] || null,
+          recyclingtips: jsonResponse["Recycling Tips"] || null,
+          imageUrl: imageUrl,
+          dateScanned: admin.firestore.FieldValue.serverTimestamp(),
+          userId: userId
+        };
+        
+        // Save to Firestore
+        const docRef = await db.collection("history").add(historyData);
+        console.log(`📌 History saved to Firestore with ID: ${docRef.id}`);
 
         // Clean up
         fs.unlinkSync(imagePath);
