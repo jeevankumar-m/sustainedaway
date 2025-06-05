@@ -165,41 +165,11 @@ const Scanner = () => {
             <SustainabilityMeter rating={parseFloat(data["Sustainability Rating"]) || 0} />
           </>
         );
-
-        saveHistoryToFirestore(data, imageUrl);
       }
     } catch (error) {
       setResponseText("⚠️ Failed to process the image.");
     } finally {
       setProcessing(false);
-    }
-  };
-
-  const saveHistoryToFirestore = async (aiResponse, imageUrl) => {
-    const user = auth.currentUser;
-
-    if (!user) {
-      return;
-    }
-
-    try {
-      await addDoc(collection(db, "history"), {
-        userId: user.uid,
-        productName: aiResponse["Product Name"] || "Unknown Product",
-        brand: aiResponse["Brand"] || "Unknown Brand",
-        sustainabilityScore: aiResponse["Sustainability Rating"] || "N/A",
-        alternativeOptions: aiResponse["Alternative Options"],
-        carbonFootprint: aiResponse["Carbon Footprint"],
-        ingredientsImpact: aiResponse["Ingredients Impact"],
-        packagingMaterial: aiResponse["Packaging Material"],
-        recyclingFeasibility: aiResponse["Recycling Feasibility"],
-        recyclingtips: aiResponse["Recycling Tips"] || "No Tips Available",
-        healthimpact: aiResponse["Health Impact"] || "N/A",
-        imageUrl: imageUrl,
-        dateScanned: serverTimestamp(),
-      });
-    } catch (error) {
-      console.error("Error saving history:", error);
     }
   };
 

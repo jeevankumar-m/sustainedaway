@@ -22,6 +22,7 @@ import {
   where,
   onSnapshot,
   orderBy,
+  limit,
 } from "firebase/firestore";
 import BackgroundIcons from "../BackgroundIcons";
 

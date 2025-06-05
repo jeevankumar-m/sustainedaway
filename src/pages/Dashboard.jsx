@@ -241,27 +241,6 @@ const Dashboard = () => {
       if (data.error) {
         setResponseData({ error: data.error });
       } else {
-        const historyData = {
-          productName: data["Product Name"] || "Unknown Product",
-          brand: data["Brand"] || "Unknown Brand",
-          sustainabilityScore: parseFloat(data["Sustainability Rating"]) || 0,
-          packagingMaterial: data["Packaging Material"] || "Not available",
-          ingredientsImpact: data["Ingredients Impact"] || "Not available",
-          recyclingFeasibility: data["Recycling Feasibility"] || "Not available",
-          healthimpact: data["Health Impact"] || null,
-          recyclingtips: data["Recycling Tips"] || null,
-          imageUrl: imageUrl,
-          dateScanned: new Date(),
-          userId: auth.currentUser.uid
-        };
-
-        try {
-          await addDoc(collection(db, "history"), historyData);
-          console.log("History saved successfully");
-        } catch (error) {
-          console.error("Error saving history:", error);
-        }
-
         setResponseData(data);
       }
     } catch (error) {
