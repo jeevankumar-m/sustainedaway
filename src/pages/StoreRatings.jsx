@@ -145,14 +145,20 @@ const StoreRatings = () => {
                 const feature = features[0];
                 const coordinates = feature.geometry.coordinates;
 
-                // Create store object with coordinates
+                // Create store object with all properties including comments
                 const store = {
                   ...feature.properties,
                   lng: coordinates[0],
                   lat: coordinates[1],
+                  comments: feature.properties.comments || [],
+                  avgRating: feature.properties.avgRating,
+                  ratingCount: feature.properties.ratingCount,
+                  totalRatings: feature.properties.totalRatings,
+                  ratingDistribution: feature.properties.ratingDistribution
                 };
 
                 setSelectedStore(store);
+                setShowComments(false); // Reset comments visibility
 
                 // Create popup with enhanced content
                 new mapboxgl.Popup()
@@ -679,7 +685,7 @@ const StoreRatings = () => {
     setNearbyRoutes(routes);
   };
 
-  // Update the createStorePopup function to include comments
+  // Update the createStorePopup function to show comment count
   const createStorePopup = (store) => {
     const comments = store.properties.comments || [];
     const commentCount = comments.length;
