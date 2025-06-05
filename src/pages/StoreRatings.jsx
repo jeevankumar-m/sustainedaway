@@ -86,6 +86,11 @@ const StoreRatings = () => {
     return `${randomAdjective}${randomNoun}`;
   };
 
+  // Add this debug function at the top of the component
+  const debugLog = (label, data) => {
+    console.log(`[DEBUG] ${label}:`, JSON.stringify(data, null, 2));
+  };
+
   // Initialize map
   useEffect(() => {
     console.log("Initializing map...");
@@ -167,21 +172,25 @@ const StoreRatings = () => {
                 const feature = features[0];
                 const coordinates = feature.geometry.coordinates;
 
-                // Create store object with all properties including comments
+                // Parse comments from the feature
+                const comments = parseComments(feature.properties.comments);
+                console.log("Parsed comments:", comments);
+
+                // Create store object with all properties
                 const store = {
                   storeName: feature.properties.storeName,
                   lng: coordinates[0],
                   lat: coordinates[1],
-                  comments: feature.properties.comments || [],
+                  comments: comments,
                   avgRating: feature.properties.avgRating,
                   ratingCount: feature.properties.ratingCount,
                   totalRatings: feature.properties.totalRatings,
                   ratingDistribution: feature.properties.ratingDistribution
                 };
 
-                console.log("Selected store:", store); // Debug log
+                console.log("Selected store with parsed comments:", store);
                 setSelectedStore(store);
-                setShowComments(false); // Reset comments visibility
+                setShowComments(false);
 
                 // Create popup with enhanced content
                 new mapboxgl.Popup()
@@ -191,7 +200,6 @@ const StoreRatings = () => {
               } else {
                 setSelectedStore(null);
                 setDirections(null);
-                // Remove route layer if it exists
                 if (map.current.getSource("route")) {
                   map.current.removeLayer("route");
                   map.current.removeSource("route");
@@ -313,11 +321,10 @@ const StoreRatings = () => {
       // Group stores by location and calculate averages
       let storeGroups = {};
       ratingsData.forEach(({ storeName, lat, lng, rating, comment, timestamp, userId, userEmail }) => {
-        // Find if this store is near any existing group
         let foundGroup = false;
         for (const key in storeGroups) {
           const [groupLat, groupLng] = key.split(',').map(Number);
-          if (isWithinRadius(lat, lng, groupLat, groupLng, 10)) { // 10 meters radius
+          if (isWithinRadius(lat, lng, groupLat, groupLng, 10)) {
             storeGroups[key].ratings.push(rating);
             if (comment) {
               if (!storeGroups[key].comments) {
@@ -336,7 +343,6 @@ const StoreRatings = () => {
           }
         }
 
-        // If no nearby group found, create new group
         if (!foundGroup) {
           const key = `${lat},${lng}`;
           storeGroups[key] = {
@@ -361,10 +367,9 @@ const StoreRatings = () => {
         type: "FeatureCollection",
         features: Object.values(storeGroups).map(
           ({ storeName, coordinates, ratings, comments, timestamps }) => {
-            const avgRating =
-              ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
+            const avgRating = ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
 
-            return {
+            const feature = {
               type: "Feature",
               geometry: {
                 type: "Point",
@@ -374,17 +379,19 @@ const StoreRatings = () => {
                 storeName,
                 avgRating: parseFloat(avgRating.toFixed(1)),
                 ratingCount: ratings.length,
-                comments: comments || [],
+                comments: JSON.stringify(comments || []), // Stringify comments for storage
                 totalRatings: ratings.length,
-                ratingDistribution: {
+                ratingDistribution: JSON.stringify({
                   1: ratings.filter((r) => r === 1).length,
                   2: ratings.filter((r) => r === 2).length,
                   3: ratings.filter((r) => r === 3).length,
                   4: ratings.filter((r) => r === 4).length,
                   5: ratings.filter((r) => r === 5).length,
-                },
+                }),
               },
             };
+
+            return feature;
           }
         ),
       };
@@ -475,14 +482,13 @@ const StoreRatings = () => {
         });
       }
 
-      // Only update top stores if user location is available
       if (userLocation) {
         updateTopStores();
       }
     } catch (error) {
       console.error("Error fetching store ratings:", error);
       setMessage({ text: "Failed to load store ratings", type: "error" });
-      setTopStores([]); // Reset top stores on error
+      setTopStores([]);
     } finally {
       setLoading(false);
     }
@@ -792,7 +798,7 @@ const StoreRatings = () => {
     }
   };
 
-  // Update the handleRatingSubmit function
+  // Update the handleRatingSubmit function to properly structure comments
   const handleRatingSubmit = async () => {
     if (!userLocation) {
       setMessage({ text: "Location not detected!", type: "error" });
@@ -1072,6 +1078,20 @@ const StoreRatings = () => {
       </div>
     );
   });
+
+  // Add this helper function to parse comments
+  const parseComments = (comments) => {
+    if (!comments) return [];
+    if (Array.isArray(comments)) return comments;
+    try {
+      // Try to parse if it's a stringified JSON
+      const parsed = JSON.parse(comments);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      console.error("Error parsing comments:", e);
+      return [];
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50/30 font-sans">
@@ -1361,12 +1381,12 @@ const StoreRatings = () => {
                         duration: 2000
                       });
 
-                      // Ensure comments is an array
-                      const comments = Array.isArray(store.properties.comments) 
-                        ? store.properties.comments 
-                        : [];
+                      // Parse comments using the same logic
+                      const comments = parseComments(store.properties.comments);
+                      console.log("Top store parsed comments:", comments);
 
-                      setSelectedStore({
+                      // Create store object with all properties including parsed comments
+                      const selectedStore = {
                         storeName: store.properties.storeName,
                         lng: coordinates[0],
                         lat: coordinates[1],
@@ -1375,8 +1395,11 @@ const StoreRatings = () => {
                         ratingCount: store.properties.ratingCount,
                         totalRatings: store.properties.totalRatings,
                         ratingDistribution: store.properties.ratingDistribution
-                      });
-                      setShowComments(false); // Reset comments visibility
+                      };
+
+                      console.log("Selected store from top stores:", selectedStore);
+                      setSelectedStore(selectedStore);
+                      setShowComments(false);
                     }}
                   >
                     <div className="flex items-center justify-between">
@@ -1458,7 +1481,10 @@ const StoreRatings = () => {
                   </div>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => setShowComments(!showComments)}
+                      onClick={() => {
+                        debugLog("Current selected store", selectedStore);
+                        setShowComments(!showComments);
+                      }}
                       className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition-colors"
                     >
                       <FaComments className="text-sm" />
@@ -1479,8 +1505,13 @@ const StoreRatings = () => {
                 {showComments && (
                   <div className="mt-4 space-y-4">
                     <h4 className="font-medium text-gray-800">All Comments</h4>
-                    {selectedStore.comments && selectedStore.comments.length > 0 ? (
+                    {Array.isArray(selectedStore.comments) && selectedStore.comments.length > 0 ? (
                       selectedStore.comments.map((comment, index) => {
+                        if (!comment || !comment.text) {
+                          console.log("Invalid comment:", comment);
+                          return null;
+                        }
+                        
                         const anonymousName = generateAnonymousName();
                         const nameInitial = anonymousName.charAt(0);
                         
