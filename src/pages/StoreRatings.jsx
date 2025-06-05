@@ -20,7 +20,7 @@ import { useNavigate } from "react-router-dom";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { db } from "../firebase";
-import { collection, getDocs, addDoc } from "firebase/firestore";
+import { collection, getDocs, addDoc, query, where, updateDoc, doc } from "firebase/firestore";
 import { getAuth, signOut } from "firebase/auth";
 import * as turf from "@turf/turf";
 import { moderateContent, sanitizeText } from "../utils/contentModeration";
@@ -63,6 +63,11 @@ const StoreRatings = () => {
   const [directionsShown, setDirectionsShown] = useState(false);
   const [ratingFormVisible, setRatingFormVisible] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [topStores, setTopStores] = useState([]);
+  const [storeComments, setStoreComments] = useState([]);
+  const [showComments, setShowComments] = useState(false);
+  const [hasRated, setHasRated] = useState(false);
+  const [existingRating, setExistingRating] = useState(null);
 
   // Initialize map
   useEffect(() => {
@@ -217,6 +222,35 @@ const StoreRatings = () => {
     }
   }, [mapLoaded]);
 
+  // Update top stores when user location changes
+  useEffect(() => {
+    if (userLocation && map.current) {
+      updateTopStores();
+    }
+  }, [userLocation]);
+
+  const updateTopStores = () => {
+    const storesSource = map.current.getSource("stores");
+    if (!storesSource) return;
+
+    const storesData = storesSource._data.features;
+    const nearbyStores = storesData
+      .filter((store) => {
+        const [lng, lat] = store.geometry.coordinates;
+        const distance = getDistanceFromLatLonInKm(
+          userLocation.lat,
+          userLocation.lng,
+          lat,
+          lng
+        );
+        return distance <= 6; // Within 6km
+      })
+      .sort((a, b) => b.properties.avgRating - a.properties.avgRating)
+      .slice(0, 5); // Top 5 stores
+
+    setTopStores(nearbyStores);
+  };
+
   const fetchStoreRatings = async () => {
     setLoading(true);
     try {
@@ -229,26 +263,36 @@ const StoreRatings = () => {
 
       // Group stores by location and calculate averages
       let storeGroups = {};
-      ratingsData.forEach(
-        ({ storeName, lat, lng, rating, comment, timestamp }) => {
-          const key = `${storeName}-${lat}-${lng}`;
-          if (!storeGroups[key]) {
-            storeGroups[key] = {
-              storeName,
-              lat,
-              lng,
-              ratings: [rating],
-              comments: comment ? [comment] : [],
-              timestamps: [timestamp],
-              coordinates: [lng, lat],
-            };
-          } else {
+      ratingsData.forEach(({ storeName, lat, lng, rating, comment, timestamp, userId, userEmail }) => {
+        // Find if this store is near any existing group
+        let foundGroup = false;
+        for (const key in storeGroups) {
+          const [groupLat, groupLng] = key.split(',').map(Number);
+          if (isWithinRadius(lat, lng, groupLat, groupLng, 10)) { // 10 meters radius
             storeGroups[key].ratings.push(rating);
-            if (comment) storeGroups[key].comments.push(comment);
+            if (comment) {
+              storeGroups[key].comments.push({ text: comment, timestamp, userId, userEmail });
+            }
             storeGroups[key].timestamps.push(timestamp);
+            foundGroup = true;
+            break;
           }
         }
-      );
+
+        // If no nearby group found, create new group
+        if (!foundGroup) {
+          const key = `${lat},${lng}`;
+          storeGroups[key] = {
+            storeName,
+            lat,
+            lng,
+            ratings: [rating],
+            comments: comment ? [{ text: comment, timestamp, userId, userEmail }] : [],
+            timestamps: [timestamp],
+            coordinates: [lng, lat],
+          };
+        }
+      });
 
       // Calculate averages and prepare GeoJSON
       const geojson = {
@@ -257,11 +301,10 @@ const StoreRatings = () => {
           ({ storeName, coordinates, ratings, comments, timestamps }) => {
             const avgRating =
               ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
-            // Get the most recent comment
-            const latestComment =
-              comments.length > 0
-                ? comments[timestamps.indexOf(Math.max(...timestamps))]
-                : null;
+            // Sort comments by timestamp
+            const sortedComments = Array.isArray(comments) 
+              ? comments.sort((a, b) => b.timestamp - a.timestamp)
+              : [];
 
             return {
               type: "Feature",
@@ -273,7 +316,8 @@ const StoreRatings = () => {
                 storeName,
                 avgRating: parseFloat(avgRating.toFixed(1)),
                 ratingCount: ratings.length,
-                latestComment,
+                latestComment: sortedComments[0]?.text || null,
+                comments: sortedComments,
                 totalRatings: ratings.length,
                 ratingDistribution: {
                   1: ratings.filter((r) => r === 1).length,
@@ -643,52 +687,332 @@ const StoreRatings = () => {
     }
   };
 
+  // Add this helper function to check if two locations are within a certain radius
+  const isWithinRadius = (lat1, lng1, lat2, lng2, radiusInMeters) => {
+    const R = 6371e3; // Earth's radius in meters
+    const φ1 = (lat1 * Math.PI) / 180;
+    const φ2 = (lat2 * Math.PI) / 180;
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+    const Δλ = ((lng2 - lng1) * Math.PI) / 180;
+
+    const a =
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+
+    return distance <= radiusInMeters;
+  };
+
+  // Add this function to find nearby store ratings
+  const findNearbyStoreRating = async (storeName, lat, lng) => {
+    const user = auth.currentUser;
+    if (!user) return null;
+
+    try {
+      const ratingsRef = collection(db, "storeRatings");
+      const querySnapshot = await getDocs(ratingsRef);
+      
+      // Find ratings for the same store within 10 meters
+      for (const doc of querySnapshot.docs) {
+        const rating = doc.data();
+        if (
+          rating.storeName === storeName &&
+          isWithinRadius(lat, lng, rating.lat, rating.lng, 10) // 10 meters radius
+        ) {
+          return {
+            id: doc.id,
+            ...rating
+          };
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error("Error finding nearby store rating:", error);
+      return null;
+    }
+  };
+
+  // Update the handleRatingSubmit function
   const handleRatingSubmit = async () => {
-    if (!userLocation)
-      return setMessage({ text: "Location not detected!", type: "error" });
-
-    // Sanitize and moderate store name
-    const sanitizedStoreName = sanitizeText(storeName);
-    const storeNameModeration = moderateContent(sanitizedStoreName);
-
-    if (!storeNameModeration.isClean) {
-      setMessage({ text: storeNameModeration.reason, type: "error" });
+    if (!userLocation) {
+      setMessage({ text: "Location not detected!", type: "error" });
       return;
     }
 
-    // Sanitize and moderate comment if provided
-    const sanitizedComment = sanitizeText(comment);
-    if (sanitizedComment) {
-      const commentModeration = moderateContent(sanitizedComment);
-      if (!commentModeration.isClean) {
-        setCommentError(commentModeration.reason);
-        return;
-      }
+    if (!storeName.trim()) {
+      setMessage({ text: "Please enter a store name", type: "error" });
+      return;
+    }
+
+    const user = auth.currentUser;
+    if (!user) {
+      setMessage({ text: "Please sign in to rate stores", type: "error" });
+      return;
     }
 
     try {
-      await addDoc(collection(db, "storeRatings"), {
-        storeName: sanitizedStoreName,
-        comment: sanitizedComment,
+      const ratingData = {
+        storeName: storeName.trim(),
+        comment: comment.trim(),
         lat: userLocation.lat,
         lng: userLocation.lng,
         rating,
         timestamp: new Date(),
-      });
+        userId: user.uid,
+        userEmail: user.email
+      };
 
-      setMessage({ text: "Rating submitted successfully!", type: "success" });
+      // Check for nearby existing rating
+      const nearbyRating = await findNearbyStoreRating(
+        storeName.trim(),
+        userLocation.lat,
+        userLocation.lng
+      );
+
+      if (nearbyRating) {
+        // Update existing rating
+        await updateDoc(doc(db, "storeRatings", nearbyRating.id), ratingData);
+        setMessage({ text: "Rating updated successfully!", type: "success" });
+      } else {
+        // Create new rating
+        await addDoc(collection(db, "storeRatings"), ratingData);
+        setMessage({ text: "Rating submitted successfully!", type: "success" });
+      }
+
+      // Reset form
       setStoreName("");
       setComment("");
       setCommentError("");
       setRatingFormVisible(false);
+      setExistingRating(null);
+      
+      // Refresh store data
       fetchStoreRatings();
     } catch (error) {
+      console.error("Error submitting rating:", error);
       setMessage({
         text: "Failed to submit rating. Please try again.",
         type: "error",
       });
     }
   };
+
+  // Update the checkUserRating function
+  const checkUserRating = async (storeName, lat, lng) => {
+    const user = auth.currentUser;
+    if (!user) return null;
+
+    try {
+      const ratingsRef = collection(db, "storeRatings");
+      const querySnapshot = await getDocs(ratingsRef);
+      
+      // Find user's rating for this store within 10 meters
+      for (const doc of querySnapshot.docs) {
+        const rating = doc.data();
+        if (
+          rating.userId === user.uid &&
+          rating.storeName === storeName &&
+          isWithinRadius(lat, lng, rating.lat, rating.lng, 10) // 10 meters radius
+        ) {
+          return {
+            id: doc.id,
+            ...rating
+          };
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error("Error checking user rating:", error);
+      return null;
+    }
+  };
+
+  // Rating Form Component
+  const RatingForm = React.memo(() => {
+    const [localStoreName, setLocalStoreName] = useState("");
+    const [localComment, setLocalComment] = useState("");
+    const [localRating, setLocalRating] = useState(3);
+    const [isChecking, setIsChecking] = useState(true);
+
+    useEffect(() => {
+      const checkRating = async () => {
+        if (selectedStore) {
+          const rating = await checkUserRating(
+            selectedStore.storeName,
+            selectedStore.lat,
+            selectedStore.lng
+          );
+          if (rating) {
+            setExistingRating(rating);
+            setLocalStoreName(rating.storeName);
+            setLocalRating(rating.rating);
+            setLocalComment(rating.comment || "");
+          } else {
+            setExistingRating(null);
+            setLocalStoreName(selectedStore.storeName);
+            setLocalRating(3);
+            setLocalComment("");
+          }
+        }
+        setIsChecking(false);
+      };
+      checkRating();
+    }, [selectedStore]);
+
+    const handleSubmit = async () => {
+      if (!userLocation) {
+        setMessage({ text: "Location not detected!", type: "error" });
+        return;
+      }
+
+      if (!localStoreName.trim()) {
+        setMessage({ text: "Please enter a store name", type: "error" });
+        return;
+      }
+
+      const user = auth.currentUser;
+      if (!user) {
+        setMessage({ text: "Please sign in to rate stores", type: "error" });
+        return;
+      }
+
+      try {
+        const ratingData = {
+          storeName: localStoreName.trim(),
+          comment: localComment.trim(),
+          lat: userLocation.lat,
+          lng: userLocation.lng,
+          rating: localRating,
+          timestamp: new Date(),
+          userId: user.uid,
+          userEmail: user.email
+        };
+
+        // Check for nearby existing rating
+        const nearbyRating = await findNearbyStoreRating(
+          localStoreName.trim(),
+          userLocation.lat,
+          userLocation.lng
+        );
+
+        if (nearbyRating) {
+          // Update existing rating
+          await updateDoc(doc(db, "storeRatings", nearbyRating.id), ratingData);
+          setMessage({ text: "Rating updated successfully!", type: "success" });
+        } else {
+          // Create new rating
+          await addDoc(collection(db, "storeRatings"), ratingData);
+          setMessage({ text: "Rating submitted successfully!", type: "success" });
+        }
+
+        // Reset form
+        setLocalStoreName("");
+        setLocalComment("");
+        setLocalRating(3);
+        setRatingFormVisible(false);
+        setExistingRating(null);
+        
+        // Refresh store data
+        fetchStoreRatings();
+      } catch (error) {
+        console.error("Error submitting rating:", error);
+        setMessage({
+          text: "Failed to submit rating. Please try again.",
+          type: "error",
+        });
+      }
+    };
+
+    if (isChecking) {
+      return <Spinner />;
+    }
+
+    return (
+      <div className="bg-white rounded-2xl shadow-md overflow-hidden mb-5">
+        <div className="p-5 border-b border-gray-100">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-bold text-gray-800 text-lg">
+              {existingRating ? "Update Your Rating" : "Rate This Location"}
+            </h3>
+            <button
+              onClick={() => {
+                setRatingFormVisible(false);
+                setExistingRating(null);
+                setLocalStoreName("");
+                setLocalComment("");
+                setLocalRating(3);
+              }}
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
+            >
+              <FaTimes size={16} />
+            </button>
+          </div>
+
+          {existingRating && (
+            <div className="mb-4 p-3 bg-yellow-50 rounded-lg text-yellow-800 text-sm">
+              You have already rated this store. You can update your rating below.
+            </div>
+          )}
+
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-medium mb-2">
+              Store Name
+            </label>
+            <input
+              type="text"
+              value={localStoreName}
+              onChange={(e) => setLocalStoreName(e.target.value)}
+              placeholder="Enter store name"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-medium mb-2">
+              Rating
+            </label>
+            <div className="flex gap-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setLocalRating(star)}
+                  className="text-2xl focus:outline-none transition-colors"
+                >
+                  <FaStar
+                    className={
+                      star <= localRating ? "text-yellow-500" : "text-gray-300"
+                    }
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-medium mb-2">
+              Comment (optional)
+            </label>
+            <textarea
+              value={localComment}
+              onChange={(e) => setLocalComment(e.target.value)}
+              placeholder="Share your experience..."
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <button
+            onClick={handleSubmit}
+            className="w-full py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            {existingRating ? "Update Rating" : "Submit Rating"}
+          </button>
+        </div>
+      </div>
+    );
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50/30 font-sans">
@@ -953,6 +1277,86 @@ const StoreRatings = () => {
             </div>
           </div>
 
+          {/* Top Stores This Week */}
+          {topStores.length > 0 && (
+            <div className="bg-white rounded-2xl shadow-md overflow-hidden mb-5">
+              <div className="p-4 border-b border-gray-100">
+                <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                  <FaStar className="text-yellow-500" />
+                  Top Stores This Week
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  Highly rated stores within 6km of your location
+                </p>
+              </div>
+              <div className="divide-y divide-gray-100">
+                {topStores.map((store, index) => (
+                  <div
+                    key={store.properties.storeName}
+                    className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                    onClick={() => {
+                      const coordinates = store.geometry.coordinates;
+                      map.current.flyTo({
+                        center: coordinates,
+                        zoom: 15,
+                        duration: 2000
+                      });
+                      setSelectedStore({
+                        ...store.properties,
+                        lng: coordinates[0],
+                        lat: coordinates[1]
+                      });
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-medium">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-800">
+                            {store.properties.storeName}
+                          </h4>
+                          <div className="flex items-center gap-1 mt-1">
+                            <div className="flex text-yellow-500">
+                              {[...Array(5)].map((_, i) => (
+                                <FaStar
+                                  key={i}
+                                  className={
+                                    i < Math.round(store.properties.avgRating)
+                                      ? "text-yellow-500"
+                                      : "text-gray-300"
+                                  }
+                                  size={12}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-sm text-gray-500">
+                              ({store.properties.totalRatings} ratings)
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-medium text-green-600">
+                          {store.properties.avgRating.toFixed(1)}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {getDistanceFromLatLonInKm(
+                            userLocation.lat,
+                            userLocation.lng,
+                            store.geometry.coordinates[1],
+                            store.geometry.coordinates[0]
+                          ).toFixed(1)} km
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Selected Store Card */}
           {selectedStore && (
             <div className="bg-white rounded-2xl shadow-md overflow-hidden mb-5">
@@ -981,13 +1385,44 @@ const StoreRatings = () => {
                       </span>
                     </div>
                   </div>
+                  <button
+                    onClick={() => setShowComments(!showComments)}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition-colors"
+                  >
+                    <FaComments className="text-sm" />
+                    <span className="text-sm">
+                      {showComments ? "Hide Comments" : "Show Comments"}
+                    </span>
+                  </button>
                 </div>
 
-                {selectedStore.latestComment && (
-                  <div className="mt-4 bg-gray-50 rounded-lg p-3">
-                    <p className="text-gray-600 text-sm italic">
-                      "{selectedStore.latestComment}"
-                    </p>
+                {showComments && selectedStore.comments && (
+                  <div className="mt-4 space-y-4">
+                    <h4 className="font-medium text-gray-800">All Comments</h4>
+                    {Array.isArray(selectedStore.comments) && selectedStore.comments.length > 0 ? (
+                      selectedStore.comments.map((comment, index) => (
+                        <div key={index} className="bg-gray-50 rounded-lg p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-medium">
+                                {comment.userId?.charAt(0) || "U"}
+                              </div>
+                              <span className="text-sm text-gray-600">
+                                User {comment.userId?.slice(-4) || "Anonymous"}
+                              </span>
+                            </div>
+                            <span className="text-xs text-gray-500">
+                              {comment.timestamp?.toDate?.()?.toLocaleDateString() || "Recently"}
+                            </span>
+                          </div>
+                          <p className="text-gray-700 text-sm">{comment.text}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-gray-500 text-sm text-center py-4">
+                        No comments yet. Be the first to review this store!
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
@@ -1045,86 +1480,7 @@ const StoreRatings = () => {
           )}
 
           {/* Rating Form */}
-          {ratingFormVisible && (
-            <div className="bg-white rounded-2xl shadow-md overflow-hidden mb-5">
-              <div className="p-5 border-b border-gray-100">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-bold text-gray-800 text-lg">
-                    Rate This Location
-                  </h3>
-                  <button
-                    onClick={() => setRatingFormVisible(false)}
-                    className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
-                  >
-                    <FaTimes size={16} />
-                  </button>
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-medium mb-2">
-                    Store Name
-                  </label>
-                  <input
-                    type="text"
-                    value={storeName}
-                    onChange={(e) => setStoreName(e.target.value)}
-                    placeholder="Enter store name"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-medium mb-2">
-                    Rating
-                  </label>
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        type="button"
-                        onClick={() => setRating(star)}
-                        className="text-2xl focus:outline-none transition-colors"
-                      >
-                        <FaStar
-                          className={
-                            star <= rating ? "text-yellow-500" : "text-gray-300"
-                          }
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-medium mb-2">
-                    Comment (optional)
-                  </label>
-                  <textarea
-                    value={comment}
-                    onChange={(e) => {
-                      setComment(e.target.value);
-                      setCommentError("");
-                    }}
-                    placeholder="Share your experience..."
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      commentError ? "border-red-500" : "border-gray-300"
-                    }`}
-                    rows="3"
-                  ></textarea>
-                  {commentError && (
-                    <p className="mt-1 text-sm text-red-600">{commentError}</p>
-                  )}
-                </div>
-
-                <button
-                  onClick={handleRatingSubmit}
-                  className="w-full py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  Submit Rating
-                </button>
-              </div>
-            </div>
-          )}
+          {ratingFormVisible && <RatingForm />}
 
           {/* Info Card */}
           <div className="bg-white rounded-2xl shadow-md overflow-hidden mb-5">
