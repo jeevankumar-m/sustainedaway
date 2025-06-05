@@ -230,25 +230,32 @@ const StoreRatings = () => {
   }, [userLocation]);
 
   const updateTopStores = () => {
+    if (!userLocation || !map.current) return;
+
     const storesSource = map.current.getSource("stores");
     if (!storesSource) return;
 
-    const storesData = storesSource._data.features;
-    const nearbyStores = storesData
-      .filter((store) => {
-        const [lng, lat] = store.geometry.coordinates;
-        const distance = getDistanceFromLatLonInKm(
-          userLocation.lat,
-          userLocation.lng,
-          lat,
-          lng
-        );
-        return distance <= 6; // Within 6km
-      })
-      .sort((a, b) => b.properties.avgRating - a.properties.avgRating)
-      .slice(0, 5); // Top 5 stores
+    try {
+      const storesData = storesSource._data.features;
+      const nearbyStores = storesData
+        .filter((store) => {
+          const [lng, lat] = store.geometry.coordinates;
+          const distance = getDistanceFromLatLonInKm(
+            userLocation.lat,
+            userLocation.lng,
+            lat,
+            lng
+          );
+          return distance <= 6; // Within 6km
+        })
+        .sort((a, b) => b.properties.avgRating - a.properties.avgRating)
+        .slice(0, 5); // Top 5 stores
 
-    setTopStores(nearbyStores);
+      setTopStores(nearbyStores);
+    } catch (error) {
+      console.error("Error updating top stores:", error);
+      setTopStores([]);
+    }
   };
 
   const fetchStoreRatings = async () => {
@@ -258,7 +265,20 @@ const StoreRatings = () => {
       let ratingsData = [];
 
       querySnapshot.forEach((doc) => {
-        ratingsData.push({ id: doc.id, ...doc.data() });
+        const data = doc.data();
+        if (data && data.storeName && data.lat && data.lng) { // Validate required fields
+          ratingsData.push({
+            id: doc.id,
+            storeName: data.storeName,
+            lat: data.lat,
+            lng: data.lng,
+            rating: data.rating,
+            comment: data.comment,
+            timestamp: data.timestamp,
+            userId: data.userId,
+            userEmail: data.userEmail
+          });
+        }
       });
 
       // Group stores by location and calculate averages
@@ -271,7 +291,12 @@ const StoreRatings = () => {
           if (isWithinRadius(lat, lng, groupLat, groupLng, 10)) { // 10 meters radius
             storeGroups[key].ratings.push(rating);
             if (comment) {
-              storeGroups[key].comments.push({ text: comment, timestamp, userId, userEmail });
+              storeGroups[key].comments.push({
+                text: comment,
+                timestamp,
+                userId,
+                userEmail
+              });
             }
             storeGroups[key].timestamps.push(timestamp);
             foundGroup = true;
@@ -287,7 +312,12 @@ const StoreRatings = () => {
             lat,
             lng,
             ratings: [rating],
-            comments: comment ? [{ text: comment, timestamp, userId, userEmail }] : [],
+            comments: comment ? [{
+              text: comment,
+              timestamp,
+              userId,
+              userEmail
+            }] : [],
             timestamps: [timestamp],
             coordinates: [lng, lat],
           };
@@ -385,7 +415,7 @@ const StoreRatings = () => {
           },
         });
 
-        // Add store markers with color based on average rating
+        // Add store markers
         map.current.addLayer({
           id: "unclustered-point",
           type: "circle",
@@ -417,9 +447,15 @@ const StoreRatings = () => {
           },
         });
       }
+
+      // Only update top stores if user location is available
+      if (userLocation) {
+        updateTopStores();
+      }
     } catch (error) {
       console.error("Error fetching store ratings:", error);
       setMessage({ text: "Failed to load store ratings", type: "error" });
+      setTopStores([]); // Reset top stores on error
     } finally {
       setLoading(false);
     }
@@ -643,8 +679,11 @@ const StoreRatings = () => {
     setNearbyRoutes(routes);
   };
 
-  // Update the popup content to show more rating details
+  // Update the createStorePopup function to include comments
   const createStorePopup = (store) => {
+    const comments = store.properties.comments || [];
+    const commentCount = comments.length;
+    
     return `
       <div class="p-3">
         <h3 class="font-bold text-base mb-1">${store.properties.storeName}</h3>
@@ -661,6 +700,11 @@ const StoreRatings = () => {
             store.properties.totalRatings
           } ratings)</span>
         </div>
+        ${commentCount > 0 ? `
+          <div class="mt-2 text-sm text-gray-600">
+            ${commentCount} ${commentCount === 1 ? 'comment' : 'comments'}
+          </div>
+        ` : ''}
       </div>
     `;
   };
@@ -1396,19 +1440,19 @@ const StoreRatings = () => {
                   </button>
                 </div>
 
-                {showComments && selectedStore.comments && (
+                {showComments && (
                   <div className="mt-4 space-y-4">
                     <h4 className="font-medium text-gray-800">All Comments</h4>
-                    {Array.isArray(selectedStore.comments) && selectedStore.comments.length > 0 ? (
+                    {selectedStore.comments && selectedStore.comments.length > 0 ? (
                       selectedStore.comments.map((comment, index) => (
                         <div key={index} className="bg-gray-50 rounded-lg p-3">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-medium">
-                                {comment.userId?.charAt(0) || "U"}
+                                {comment.userEmail?.charAt(0) || comment.userId?.charAt(0) || "U"}
                               </div>
                               <span className="text-sm text-gray-600">
-                                User {comment.userId?.slice(-4) || "Anonymous"}
+                                {comment.userEmail || `User ${comment.userId?.slice(-4) || "Anonymous"}`}
                               </span>
                             </div>
                             <span className="text-xs text-gray-500">
