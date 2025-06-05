@@ -69,6 +69,23 @@ const StoreRatings = () => {
   const [hasRated, setHasRated] = useState(false);
   const [existingRating, setExistingRating] = useState(null);
 
+  // Add this function near the top of the component, after the imports
+  const generateAnonymousName = () => {
+    const adjectives = [
+      "Eco", "Green", "Sustainable", "Earth", "Nature", "Forest", "Ocean", 
+      "Mountain", "River", "Sun", "Wind", "Rain", "Leaf", "Tree", "Garden"
+    ];
+    const nouns = [
+      "Friend", "Lover", "Warrior", "Guardian", "Explorer", "Traveler", 
+      "Dreamer", "Thinker", "Creator", "Builder", "Helper", "Guide", 
+      "Student", "Teacher", "Artist"
+    ];
+    
+    const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
+    return `${randomAdjective}${randomNoun}`;
+  };
+
   // Initialize map
   useEffect(() => {
     console.log("Initializing map...");
@@ -104,6 +121,11 @@ const StoreRatings = () => {
             });
 
             console.log("Map instance created");
+
+            // Handle missing images
+            map.current.on('styleimagemissing', (e) => {
+              console.log('Missing image:', e.id);
+            });
 
             // Add attribution control
             map.current.addControl(
@@ -147,7 +169,7 @@ const StoreRatings = () => {
 
                 // Create store object with all properties including comments
                 const store = {
-                  ...feature.properties,
+                  storeName: feature.properties.storeName,
                   lng: coordinates[0],
                   lat: coordinates[1],
                   comments: feature.properties.comments || [],
@@ -157,6 +179,7 @@ const StoreRatings = () => {
                   ratingDistribution: feature.properties.ratingDistribution
                 };
 
+                console.log("Selected store:", store); // Debug log
                 setSelectedStore(store);
                 setShowComments(false); // Reset comments visibility
 
@@ -272,7 +295,7 @@ const StoreRatings = () => {
 
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        if (data && data.storeName && data.lat && data.lng) { // Validate required fields
+        if (data && data.storeName && data.lat && data.lng) {
           ratingsData.push({
             id: doc.id,
             storeName: data.storeName,
@@ -297,6 +320,9 @@ const StoreRatings = () => {
           if (isWithinRadius(lat, lng, groupLat, groupLng, 10)) { // 10 meters radius
             storeGroups[key].ratings.push(rating);
             if (comment) {
+              if (!storeGroups[key].comments) {
+                storeGroups[key].comments = [];
+              }
               storeGroups[key].comments.push({
                 text: comment,
                 timestamp,
@@ -337,10 +363,6 @@ const StoreRatings = () => {
           ({ storeName, coordinates, ratings, comments, timestamps }) => {
             const avgRating =
               ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
-            // Sort comments by timestamp
-            const sortedComments = Array.isArray(comments) 
-              ? comments.sort((a, b) => b.timestamp - a.timestamp)
-              : [];
 
             return {
               type: "Feature",
@@ -352,8 +374,7 @@ const StoreRatings = () => {
                 storeName,
                 avgRating: parseFloat(avgRating.toFixed(1)),
                 ratingCount: ratings.length,
-                latestComment: sortedComments[0]?.text || null,
-                comments: sortedComments,
+                comments: comments || [],
                 totalRatings: ratings.length,
                 ratingDistribution: {
                   1: ratings.filter((r) => r === 1).length,
@@ -478,12 +499,8 @@ const StoreRatings = () => {
 
     try {
       // Format coordinates for the API
-      const origin = `${userLocation.lng.toFixed(6)},${userLocation.lat.toFixed(
-        6
-      )}`;
-      const dest = `${destination.lng.toFixed(6)},${destination.lat.toFixed(
-        6
-      )}`;
+      const origin = `${userLocation.lng.toFixed(6)},${userLocation.lat.toFixed(6)}`;
+      const dest = `${destination.lng.toFixed(6)},${destination.lat.toFixed(6)}`;
 
       // Get route from Mapbox for display
       const response = await fetch(
@@ -507,16 +524,13 @@ const StoreRatings = () => {
 
         if (distance <= 1) {
           suggestedMode = "walking";
-          suggestionReason =
-            "This location is within walking distance (less than 1 km). Walking is the most sustainable option for short distances.";
+          suggestionReason = "This location is within walking distance (less than 1 km). Walking is the most sustainable option for short distances.";
         } else if (distance <= 5) {
           suggestedMode = "bicycling";
-          suggestionReason =
-            "This location is perfect for cycling (1-5 km). Cycling is a great sustainable option for medium distances.";
+          suggestionReason = "This location is perfect for cycling (1-5 km). Cycling is a great sustainable option for medium distances.";
         } else {
           suggestedMode = "transit";
-          suggestionReason =
-            "This location is a bit far. Consider using public transportation to reduce your carbon footprint.";
+          suggestionReason = "This location is a bit far. Consider using public transportation to reduce your carbon footprint.";
         }
 
         // Display route on map
@@ -562,7 +576,10 @@ const StoreRatings = () => {
         const coordinates = route.geometry.coordinates;
         const bounds = coordinates.reduce((bounds, coord) => {
           return bounds.extend(coord);
-        }, new mapboxgl.LngLatBounds({ lng: userLocation.lng, lat: userLocation.lat }, { lng: destination.lng, lat: destination.lat }));
+        }, new mapboxgl.LngLatBounds(
+          { lng: userLocation.lng, lat: userLocation.lat },
+          { lng: destination.lng, lat: destination.lat }
+        ));
 
         map.current.fitBounds(bounds, {
           padding: 50,
@@ -687,9 +704,6 @@ const StoreRatings = () => {
 
   // Update the createStorePopup function to show comment count
   const createStorePopup = (store) => {
-    const comments = store.properties.comments || [];
-    const commentCount = comments.length;
-    
     return `
       <div class="p-3">
         <h3 class="font-bold text-base mb-1">${store.properties.storeName}</h3>
@@ -706,11 +720,6 @@ const StoreRatings = () => {
             store.properties.totalRatings
           } ratings)</span>
         </div>
-        ${commentCount > 0 ? `
-          <div class="mt-2 text-sm text-gray-600">
-            ${commentCount} ${commentCount === 1 ? 'comment' : 'comments'}
-          </div>
-        ` : ''}
       </div>
     `;
   };
@@ -1351,11 +1360,23 @@ const StoreRatings = () => {
                         zoom: 15,
                         duration: 2000
                       });
+
+                      // Ensure comments is an array
+                      const comments = Array.isArray(store.properties.comments) 
+                        ? store.properties.comments 
+                        : [];
+
                       setSelectedStore({
-                        ...store.properties,
+                        storeName: store.properties.storeName,
                         lng: coordinates[0],
-                        lat: coordinates[1]
+                        lat: coordinates[1],
+                        comments: comments,
+                        avgRating: store.properties.avgRating,
+                        ratingCount: store.properties.ratingCount,
+                        totalRatings: store.properties.totalRatings,
+                        ratingDistribution: store.properties.ratingDistribution
                       });
+                      setShowComments(false); // Reset comments visibility
                     }}
                   >
                     <div className="flex items-center justify-between">
@@ -1435,39 +1456,53 @@ const StoreRatings = () => {
                       </span>
                     </div>
                   </div>
-                  <button
-                    onClick={() => setShowComments(!showComments)}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition-colors"
-                  >
-                    <FaComments className="text-sm" />
-                    <span className="text-sm">
-                      {showComments ? "Hide Comments" : "Show Comments"}
-                    </span>
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setShowComments(!showComments)}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition-colors"
+                    >
+                      <FaComments className="text-sm" />
+                      <span className="text-sm">
+                        {showComments ? "Hide Comments" : "Show Comments"}
+                      </span>
+                    </button>
+                    <button
+                      onClick={handleDirectionsClick}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
+                    >
+                      <FaDirections className="text-sm" />
+                      <span className="text-sm">Get Directions</span>
+                    </button>
+                  </div>
                 </div>
 
                 {showComments && (
                   <div className="mt-4 space-y-4">
                     <h4 className="font-medium text-gray-800">All Comments</h4>
                     {selectedStore.comments && selectedStore.comments.length > 0 ? (
-                      selectedStore.comments.map((comment, index) => (
-                        <div key={index} className="bg-gray-50 rounded-lg p-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-medium">
-                                {comment.userEmail?.charAt(0) || comment.userId?.charAt(0) || "U"}
+                      selectedStore.comments.map((comment, index) => {
+                        const anonymousName = generateAnonymousName();
+                        const nameInitial = anonymousName.charAt(0);
+                        
+                        return (
+                          <div key={index} className="bg-gray-50 rounded-lg p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-medium">
+                                  {nameInitial}
+                                </div>
+                                <span className="text-sm text-gray-600">
+                                  {anonymousName}
+                                </span>
                               </div>
-                              <span className="text-sm text-gray-600">
-                                {comment.userEmail || `User ${comment.userId?.slice(-4) || "Anonymous"}`}
+                              <span className="text-xs text-gray-500">
+                                {comment.timestamp?.toDate?.()?.toLocaleDateString() || "Recently"}
                               </span>
                             </div>
-                            <span className="text-xs text-gray-500">
-                              {comment.timestamp?.toDate?.()?.toLocaleDateString() || "Recently"}
-                            </span>
+                            <p className="text-gray-700 text-sm">{comment.text}</p>
                           </div>
-                          <p className="text-gray-700 text-sm">{comment.text}</p>
-                        </div>
-                      ))
+                        );
+                      })
                     ) : (
                       <p className="text-gray-500 text-sm text-center py-4">
                         No comments yet. Be the first to review this store!
@@ -1482,17 +1517,11 @@ const StoreRatings = () => {
                 <div className="p-4 bg-green-50">
                   <div className="flex justify-between mb-2">
                     <span className="text-gray-700 font-medium">Distance:</span>
-                    <span className="text-gray-900">
-                      {selectedStore.distance}
-                    </span>
+                    <span className="text-gray-900">{selectedStore.distance}</span>
                   </div>
                   <div className="flex justify-between mb-3">
-                    <span className="text-gray-700 font-medium">
-                      Walking Time:
-                    </span>
-                    <span className="text-gray-900">
-                      {selectedStore.duration}
-                    </span>
+                    <span className="text-gray-700 font-medium">Walking Time:</span>
+                    <span className="text-gray-900">{selectedStore.duration}</span>
                   </div>
 
                   {/* Sustainable Travel Suggestion */}
@@ -1516,14 +1545,6 @@ const StoreRatings = () => {
                       )}
                     </div>
                   </div>
-
-                  <button
-                    onClick={handleDirectionsClick}
-                    className="w-full mt-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <FaDirections className="text-sm" />
-                    <span>Get Directions</span>
-                  </button>
                 </div>
               )}
             </div>
