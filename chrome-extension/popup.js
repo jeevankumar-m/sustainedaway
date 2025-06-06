@@ -6,14 +6,12 @@ document.addEventListener('DOMContentLoaded', function() {
   function showLoading() {
     resultsDiv.innerHTML = `
       <div class="loading-container">
-        <div class="nature-loader">
-          <div class="leaf leaf-1"></div>
-          <div class="leaf leaf-2"></div>
-          <div class="leaf leaf-3"></div>
-          <div class="leaf leaf-4"></div>
-          <div class="leaf leaf-5"></div>
+        <div class="loading-spinner">
+          <div class="spinner-circle"></div>
+          <div class="spinner-circle"></div>
+          <div class="spinner-circle"></div>
         </div>
-        <p class="loading-text">🌱 Analyzing product sustainability...</p>
+        <p class="loading-text">Analyzing product sustainability...</p>
       </div>
     `;
   }
@@ -108,10 +106,33 @@ document.addEventListener('DOMContentLoaded', function() {
       social: 'No analysis available.'
     };
 
-    const recommendations = data.recommendations || {
-      environmental: ['No recommendations available.'],
-      health: ['No recommendations available.'],
-      social: ['No recommendations available.']
+    // Default recommendations for each category
+    const defaultRecommendations = {
+      environmental: [
+        'Consider products with eco-friendly packaging',
+        'Look for products with recyclable materials',
+        'Choose products with minimal carbon footprint',
+        'Support brands with sustainable manufacturing practices'
+      ],
+      health: [
+        'Check for harmful chemicals in ingredients',
+        'Look for natural and organic alternatives',
+        'Consider hypoallergenic options',
+        'Research product safety certifications'
+      ],
+      social: [
+        'Support brands with fair labor practices',
+        'Look for companies with transparent supply chains',
+        'Consider local and small business alternatives',
+        'Check for ethical business certifications'
+      ]
+    };
+
+    // Merge default recommendations with any provided recommendations
+    const recommendations = {
+      environmental: data.recommendations?.environmental || defaultRecommendations.environmental,
+      health: data.recommendations?.health || defaultRecommendations.health,
+      social: data.recommendations?.social || defaultRecommendations.social
     };
 
     const keyFeatures = data.key_features || {
@@ -120,6 +141,8 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const certifications = Array.isArray(data.certifications) ? data.certifications : [];
+    const reviews = Array.isArray(data.reviews) ? data.reviews : [];
+    const specifications = data.specifications || {};
 
     // Calculate score color
     const score = data.score || 0;
@@ -155,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="recommendations-section">
             <h4>💡 Recommendations</h4>
             <ul>
-              ${(recommendations.environmental || data.recommendations || ['No recommendations available.']).map(rec => `<li>${rec}</li>`).join('')}
+              ${recommendations.environmental.map(rec => `<li>${rec}</li>`).join('')}
             </ul>
           </div>
         </div>
@@ -168,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="recommendations-section">
             <h4>💡 Recommendations</h4>
             <ul>
-              ${(recommendations.health || ['No recommendations available.']).map(rec => `<li>${rec}</li>`).join('')}
+              ${recommendations.health.map(rec => `<li>${rec}</li>`).join('')}
             </ul>
           </div>
         </div>
@@ -181,11 +204,25 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="recommendations-section">
             <h4>💡 Recommendations</h4>
             <ul>
-              ${(recommendations.social || ['No recommendations available.']).map(rec => `<li>${rec}</li>`).join('')}
+              ${recommendations.social.map(rec => `<li>${rec}</li>`).join('')}
             </ul>
           </div>
         </div>
       </div>
+
+      ${Object.keys(specifications).length > 0 ? `
+        <div class="specifications-section">
+          <h4>📋 Product Specifications</h4>
+          <div class="specs-grid">
+            ${Object.entries(specifications).map(([key, value]) => `
+              <div class="spec-item">
+                <span class="spec-label">${key}</span>
+                <span class="spec-value">${value}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
 
       ${certifications.length > 0 ? `
         <div class="certifications-section">
@@ -238,10 +275,27 @@ document.addEventListener('DOMContentLoaded', function() {
     return '🍂';
   }
 
+  // Helper function to calculate average rating
+  function calculateAverageRating(reviews) {
+    const validRatings = reviews.filter(review => review.rating !== null).map(review => review.rating);
+    if (validRatings.length === 0) return 0;
+    const sum = validRatings.reduce((a, b) => a + b, 0);
+    return (sum / validRatings.length).toFixed(1);
+  }
+
+  // Helper function to get star rating display
+  function getRatingStars(rating) {
+    const fullStars = Math.floor(rating);
+    const halfStar = rating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+    
+    return '⭐'.repeat(fullStars) + (halfStar ? '⭐' : '') + '☆'.repeat(emptyStars);
+  }
+
   // Add CSS
   const style = document.createElement('style');
   style.textContent = `
-    /* Nature-themed loading animation */
+    /* Loading animation styles */
     .loading-container {
       display: flex;
       flex-direction: column;
@@ -249,54 +303,71 @@ document.addEventListener('DOMContentLoaded', function() {
       justify-content: center;
       padding: 40px;
       min-height: 300px;
-      background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+      background: #ffffff;
     }
 
-    .nature-loader {
+    .loading-spinner {
       position: relative;
-      width: 100px;
-      height: 100px;
+      width: 80px;
+      height: 80px;
       margin-bottom: 20px;
     }
 
-    .leaf {
+    .spinner-circle {
       position: absolute;
-      width: 20px;
-      height: 20px;
-      background: #2ecc71;
-      border-radius: 50% 0 50% 50%;
-      transform-origin: 100% 0;
-      animation: leaf-fall 2s infinite;
+      width: 100%;
+      height: 100%;
+      border: 4px solid transparent;
+      border-radius: 50%;
+      animation: spin 1.5s linear infinite;
     }
 
-    .leaf-1 { animation-delay: 0s; }
-    .leaf-2 { animation-delay: 0.4s; }
-    .leaf-3 { animation-delay: 0.8s; }
-    .leaf-4 { animation-delay: 1.2s; }
-    .leaf-5 { animation-delay: 1.6s; }
+    .spinner-circle:nth-child(1) {
+      border-top-color: #2ecc71;
+      animation-delay: 0s;
+    }
 
-    @keyframes leaf-fall {
+    .spinner-circle:nth-child(2) {
+      border-right-color: #27ae60;
+      animation-delay: 0.5s;
+    }
+
+    .spinner-circle:nth-child(3) {
+      border-bottom-color: #2ecc71;
+      animation-delay: 1s;
+    }
+
+    @keyframes spin {
       0% {
-        transform: rotate(0deg) translate(0, 0);
-        opacity: 1;
+        transform: rotate(0deg);
       }
       100% {
-        transform: rotate(360deg) translate(50px, 50px);
-        opacity: 0;
+        transform: rotate(360deg);
       }
     }
 
     .loading-text {
       font-size: 16px;
       color: #2ecc71;
-      animation: pulse 1.5s infinite;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      font-weight: 500;
+      text-align: center;
+      margin-top: 20px;
+      animation: pulse 1.5s ease-in-out infinite;
     }
 
     @keyframes pulse {
-      0% { opacity: 0.6; }
-      50% { opacity: 1; }
-      100% { opacity: 0.6; }
+      0% {
+        opacity: 0.6;
+        transform: scale(0.98);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      100% {
+        opacity: 0.6;
+        transform: scale(0.98);
+      }
     }
 
     /* Enhanced UI styles */
@@ -523,6 +594,107 @@ document.addEventListener('DOMContentLoaded', function() {
 
     p {
       line-height: 1.6;
+      color: #333;
+    }
+
+    /* New styles for reviews and specifications */
+    .reviews-section {
+      margin-bottom: 25px;
+    }
+
+    .reviews-summary {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f9fbe7;
+      border-radius: 10px;
+    }
+
+    .average-rating {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .rating-number {
+      font-weight: bold;
+      color: #2ecc71;
+      margin-right: 10px;
+    }
+
+    .rating-stars {
+      color: #f1c40f;
+    }
+
+    .reviews-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .review-card {
+      background: #ffffff;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      transition: transform 0.3s ease;
+    }
+
+    .review-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .review-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .review-rating {
+      color: #f1c40f;
+    }
+
+    .review-date {
+      color: #666;
+      font-size: 12px;
+    }
+
+    .review-text {
+      color: #333;
+      line-height: 1.5;
+    }
+
+    .specifications-section {
+      margin-top: 25px;
+      padding: 20px;
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .spec-item {
+      background: #f9fbe7;
+      padding: 10px;
+      border-radius: 5px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .spec-label {
+      font-weight: bold;
+      color: #2ecc71;
+      margin-bottom: 5px;
+    }
+
+    .spec-value {
       color: #333;
     }
   `;
