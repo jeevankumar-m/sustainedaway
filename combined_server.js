@@ -276,6 +276,90 @@ app.post('/api/tweet', async (req, res) => {
   }
 });
 
+// Add this new endpoint for product analysis
+app.post('/analyze-product', async (req, res) => {
+  try {
+    const productInfo = req.body;
+    
+    // Validate required fields
+    if (!productInfo.title || !productInfo.description) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+        title: productInfo.title || '',
+        score: 0,
+        analysis: 'Please provide both title and description.',
+        recommendations: ['Please try again with complete product information.']
+      });
+    }
+
+    const pyPath = path.join(__dirname, 'analyze_product.py');
+    const python = spawn('python', [pyPath]);
+
+    let result = '';
+    let errorResult = '';
+
+    python.stdout.on('data', (data) => {
+      result += data.toString();
+    });
+
+    python.stderr.on('data', (data) => {
+      errorResult += data.toString();
+    });
+
+    python.on('close', (code) => {
+      if (errorResult) {
+        console.error('Python error:', errorResult);
+      }
+
+      try {
+        // Clean up the result string - remove any markdown code block markers
+        const cleanResult = result.trim().replace(/```json\n?|\n?```/g, '');
+        const jsonResponse = JSON.parse(cleanResult);
+        
+        // Ensure the response has all required fields
+        const response = {
+          title: jsonResponse.title || productInfo.title || '',
+          score: jsonResponse.score || 0,
+          analysis: jsonResponse.analysis || 'No analysis available.',
+          recommendations: Array.isArray(jsonResponse.recommendations) 
+            ? jsonResponse.recommendations 
+            : ['No recommendations available.']
+        };
+
+        if (jsonResponse.error) {
+          response.error = jsonResponse.error;
+        }
+
+        console.log('Sending response to client:', response);
+        res.json(response);
+      } catch (error) {
+        console.error('JSON Parsing Error:', error.message);
+        console.error('Raw result:', result);
+        res.status(500).json({
+          error: 'Invalid response from analysis service',
+          title: productInfo.title || '',
+          score: 0,
+          analysis: 'Failed to analyze product.',
+          recommendations: ['Please try again later.']
+        });
+      }
+    });
+
+    // Send product info as JSON to Python script
+    python.stdin.write(JSON.stringify(productInfo));
+    python.stdin.end();
+  } catch (error) {
+    console.error('Error analyzing product:', error);
+    res.status(500).json({
+      error: 'Failed to analyze product',
+      title: req.body?.title || '',
+      score: 0,
+      analysis: 'An unexpected error occurred.',
+      recommendations: ['Please try again later.']
+    });
+  }
+});
+
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Combined Server running on port ${PORT}`)); 

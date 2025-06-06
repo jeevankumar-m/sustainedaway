@@ -7,9 +7,10 @@ document.addEventListener('DOMContentLoaded', function() {
     resultsDiv.innerHTML = `
       <div class="loading-container">
         <div class="loading-spinner">
-          <div class="spinner-circle"></div>
-          <div class="spinner-circle"></div>
-          <div class="spinner-circle"></div>
+          <div class="spinner-circle spinner-1"></div>
+          <div class="spinner-circle spinner-2"></div>
+          <div class="spinner-circle spinner-3"></div>
+          <div class="spinner-circle spinner-4"></div>
         </div>
         <p class="loading-text">Analyzing product sustainability...</p>
       </div>
@@ -295,6 +296,20 @@ document.addEventListener('DOMContentLoaded', function() {
   // Add CSS
   const style = document.createElement('style');
   style.textContent = `
+    body {
+      background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+      font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      color: #333;
+    }
+
+    #results {
+      position: relative;
+      z-index: 1;
+    }
+
     /* Loading animation styles */
     .loading-container {
       display: flex;
@@ -303,7 +318,13 @@ document.addEventListener('DOMContentLoaded', function() {
       justify-content: center;
       padding: 40px;
       min-height: 300px;
-      background: #ffffff;
+      background: linear-gradient(135deg, #ffffff 0%, #e8f5e9 100%);
+      border-radius: 25px;
+      box-shadow: 0 8px 32px rgba(46, 204, 113, 0.15);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(46, 204, 113, 0.2);
+      position: relative;
+      z-index: 2;
     }
 
     .loading-spinner {
@@ -319,40 +340,49 @@ document.addEventListener('DOMContentLoaded', function() {
       height: 100%;
       border: 4px solid transparent;
       border-radius: 50%;
-      animation: spin 1.5s linear infinite;
+      animation: spin 2s linear infinite;
     }
 
-    .spinner-circle:nth-child(1) {
+    .spinner-1 {
       border-top-color: #2ecc71;
       animation-delay: 0s;
     }
 
-    .spinner-circle:nth-child(2) {
+    .spinner-2 {
       border-right-color: #27ae60;
       animation-delay: 0.5s;
     }
 
-    .spinner-circle:nth-child(3) {
+    .spinner-3 {
       border-bottom-color: #2ecc71;
       animation-delay: 1s;
     }
 
+    .spinner-4 {
+      border-left-color: #27ae60;
+      animation-delay: 1.5s;
+    }
+
     @keyframes spin {
       0% {
-        transform: rotate(0deg);
+        transform: rotate(0deg) scale(1);
+      }
+      50% {
+        transform: rotate(180deg) scale(1.1);
       }
       100% {
-        transform: rotate(360deg);
+        transform: rotate(360deg) scale(1);
       }
     }
 
     .loading-text {
       font-size: 16px;
       color: #2ecc71;
-      font-weight: 500;
+      font-weight: 600;
       text-align: center;
       margin-top: 20px;
       animation: pulse 1.5s ease-in-out infinite;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
 
     @keyframes pulse {
@@ -376,26 +406,30 @@ document.addEventListener('DOMContentLoaded', function() {
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
-      padding-bottom: 15px;
-      border-bottom: 2px solid #e8f5e9;
+      padding: 20px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #ffffff 0%, #e8f5e9 100%);
+      box-shadow: 0 8px 32px rgba(46, 204, 113, 0.15);
+      border: 1px solid rgba(46, 204, 113, 0.2);
       animation: slideDown 0.5s ease-out;
-      background: linear-gradient(135deg, #ffffff 0%, #f1f8e9 100%);
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      position: relative;
+      z-index: 1;
     }
 
-    @keyframes slideDown {
-      from { transform: translateY(-20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+    .product-header h3 {
+      color: #2ecc71;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
 
     .score-container {
       text-align: center;
-      background: #ffffff;
-      padding: 10px 20px;
-      border-radius: 20px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      background: linear-gradient(135deg, #ffffff 0%, #e8f5e9 100%);
+      padding: 15px 25px;
+      border-radius: 25px;
+      box-shadow: 0 8px 32px rgba(46, 204, 113, 0.15);
       transition: all 0.3s ease;
       border: 2px solid;
     }
@@ -421,62 +455,47 @@ document.addEventListener('DOMContentLoaded', function() {
     .analysis-tabs {
       display: flex;
       margin-bottom: 20px;
-      border-bottom: 2px solid #e8f5e9;
-      animation: fadeIn 0.5s ease-out;
-      background: #ffffff;
-      border-radius: 10px 10px 0 0;
+      background: linear-gradient(135deg, #ffffff 0%, #e8f5e9 100%);
+      border-radius: 20px;
       overflow: hidden;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      box-shadow: 0 8px 32px rgba(46, 204, 113, 0.15);
+      border: 1px solid rgba(46, 204, 113, 0.2);
+      position: relative;
+      z-index: 1;
     }
 
     .tab {
-      padding: 12px 24px;
+      padding: 15px 25px;
       cursor: pointer;
-      border-bottom: 3px solid transparent;
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
       flex: 1;
       text-align: center;
+      font-weight: 500;
+      color: #333;
     }
 
     .tab:hover {
-      background: #f1f8e9;
+      background: rgba(46, 204, 113, 0.1);
     }
 
     .tab.active {
-      border-bottom-color: #2ecc71;
       color: #2ecc71;
-      font-weight: bold;
-    }
-
-    .tab.active::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 3px;
-      background: #2ecc71;
-      animation: slideIn 0.3s ease-out;
-    }
-
-    @keyframes slideIn {
-      from { transform: translateX(-100%); }
-      to { transform: translateX(0); }
+      font-weight: 600;
+      background: rgba(46, 204, 113, 0.1);
     }
 
     .tab-pane {
       display: none;
-      padding: 20px;
-      animation: fadeIn 0.5s ease-out;
-      background: #ffffff;
-      border-radius: 0 0 10px 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      padding: 25px;
+      background: linear-gradient(135deg, #ffffff 0%, #e8f5e9 100%);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(46, 204, 113, 0.15);
+      border: 1px solid rgba(46, 204, 113, 0.2);
+      margin-top: 20px;
+      position: relative;
+      z-index: 1;
     }
 
     .tab-pane.active {
@@ -485,65 +504,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
     .analysis-section, .recommendations-section {
       margin-bottom: 25px;
-      padding: 20px;
-      background: #f9fbe7;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      padding: 25px;
+      background: linear-gradient(135deg, #ffffff 0%, #e8f5e9 100%);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(46, 204, 113, 0.15);
+      border: 1px solid rgba(46, 204, 113, 0.2);
       transition: all 0.3s ease;
+      position: relative;
+      z-index: 1;
     }
 
-    .analysis-section:hover, .recommendations-section:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    .analysis-section p, .recommendations-section p {
+      color: #333;
+      line-height: 1.6;
+      margin: 0;
     }
 
-    .certifications-section, .key-features {
-      margin-top: 25px;
-      padding: 20px;
-      border-top: 2px solid #e8f5e9;
-      animation: fadeIn 0.5s ease-out;
-      background: #ffffff;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    }
-
-    .positive-features, .negative-features {
-      margin-top: 20px;
-      padding: 20px;
-      border-radius: 10px;
-      transition: all 0.3s ease;
-    }
-
-    .positive-features {
-      background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
-    }
-
-    .negative-features {
-      background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
-    }
-
-    .positive-features:hover, .negative-features:hover {
-      transform: translateX(5px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-
-    ul {
+    .analysis-section ul, .recommendations-section ul {
       list-style-type: none;
       padding-left: 0;
+      margin: 0;
     }
 
-    li {
+    .analysis-section li, .recommendations-section li {
       margin-bottom: 10px;
       padding-left: 25px;
       position: relative;
-      transition: all 0.3s ease;
+      color: #333;
     }
 
-    li:hover {
-      transform: translateX(5px);
-    }
-
-    li:before {
+    .analysis-section li:before, .recommendations-section li:before {
       content: "•";
       position: absolute;
       left: 0;
@@ -551,151 +541,96 @@ document.addEventListener('DOMContentLoaded', function() {
       font-size: 20px;
     }
 
-    .error-container {
-      text-align: center;
-      padding: 30px;
-      color: #e74c3c;
+    .positive-features {
+      background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 8px 32px rgba(46, 204, 113, 0.15);
+      border: 1px solid rgba(46, 204, 113, 0.2);
+      position: relative;
+      z-index: 1;
+    }
+
+    .negative-features {
       background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
-      border-radius: 10px;
-      animation: shake 0.5s ease-in-out;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 8px 32px rgba(244, 67, 54, 0.15);
+      border: 1px solid rgba(244, 67, 54, 0.2);
+      position: relative;
+      z-index: 1;
     }
 
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-5px); }
-      75% { transform: translateX(5px); }
-    }
-
-    .error-container button {
-      margin-top: 15px;
-      padding: 10px 20px;
-      background-color: #2ecc71;
-      color: white;
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-
-    .error-container button:hover {
-      background-color: #27ae60;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-
-    h4 {
-      color: #2ecc71;
-      margin-bottom: 15px;
-      font-size: 18px;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    }
-
-    p {
-      line-height: 1.6;
-      color: #333;
-    }
-
-    /* New styles for reviews and specifications */
-    .reviews-section {
-      margin-bottom: 25px;
-    }
-
-    .reviews-summary {
-      text-align: center;
-      margin-bottom: 20px;
-      padding: 15px;
-      background: #f9fbe7;
-      border-radius: 10px;
-    }
-
-    .average-rating {
-      font-size: 24px;
-      margin-bottom: 10px;
-    }
-
-    .rating-number {
-      font-weight: bold;
-      color: #2ecc71;
-      margin-right: 10px;
-    }
-
-    .rating-stars {
-      color: #f1c40f;
-    }
-
-    .reviews-list {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    .review-card {
-      background: #ffffff;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-      transition: transform 0.3s ease;
-    }
-
-    .review-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-
-    .review-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    .review-rating {
-      color: #f1c40f;
-    }
-
-    .review-date {
-      color: #666;
-      font-size: 12px;
-    }
-
-    .review-text {
-      color: #333;
-      line-height: 1.5;
-    }
-
-    .specifications-section {
-      margin-top: 25px;
-      padding: 20px;
-      background: #ffffff;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    }
-
-    .specs-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 15px;
-      margin-top: 15px;
+    .specifications-section, .certifications-section {
+      border-radius: 20px;
+      background: linear-gradient(135deg, #ffffff 0%, #e8f5e9 100%);
+      box-shadow: 0 8px 32px rgba(46, 204, 113, 0.15);
+      border: 1px solid rgba(46, 204, 113, 0.2);
+      padding: 25px;
+      margin-top: 20px;
+      position: relative;
+      z-index: 1;
     }
 
     .spec-item {
-      background: #f9fbe7;
-      padding: 10px;
-      border-radius: 5px;
-      display: flex;
-      flex-direction: column;
+      background: linear-gradient(135deg, #ffffff 0%, #e8f5e9 100%);
+      border-radius: 15px;
+      padding: 15px;
+      box-shadow: 0 4px 16px rgba(46, 204, 113, 0.1);
+      border: 1px solid rgba(46, 204, 113, 0.1);
+      margin-bottom: 10px;
     }
 
     .spec-label {
-      font-weight: bold;
       color: #2ecc71;
+      font-weight: 600;
       margin-bottom: 5px;
     }
 
     .spec-value {
       color: #333;
+    }
+
+    .error-container {
+      text-align: center;
+      padding: 30px;
+      color: #e74c3c;
+      background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(244, 67, 54, 0.15);
+      border: 1px solid rgba(244, 67, 54, 0.2);
+      animation: shake 0.5s ease-in-out;
+      position: relative;
+      z-index: 2;
+    }
+
+    .error-container h3 {
+      color: #e74c3c;
+      margin: 0 0 15px 0;
+      font-size: 1.5rem;
+    }
+
+    .error-container p {
+      color: #e74c3c;
+      margin: 0 0 20px 0;
+    }
+
+    .error-container button {
+      margin-top: 15px;
+      padding: 12px 25px;
+      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 32px rgba(46, 204, 113, 0.15);
+      font-weight: 600;
+    }
+
+    .error-container button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(46, 204, 113, 0.25);
     }
   `;
   document.head.appendChild(style);
