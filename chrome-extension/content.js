@@ -1,47 +1,101 @@
-// Listen for messages from the popup
+// Listen for messages from popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'getProductInfo') {
-    const productInfo = extractProductInfo();
-    sendResponse(productInfo);
-  }
+    if (request.action === "getProductInfo") {
+        // Extract product information from the page
+        const productInfo = {
+            title: document.title || "Unknown Product",
+            description: getProductDescription(),
+            brand: getProductBrand(),
+            price: getProductPrice(),
+            category: getProductCategory(),
+            url: window.location.href
+        };
+        
+        console.log('Extracted product info:', productInfo);
+        sendResponse(productInfo);
+    }
+    return true; // Keep the message channel open for async response
 });
 
-function extractProductInfo() {
-  // Common selectors for both Amazon and Flipkart
-  const selectors = {
-    amazon: {
-      title: '#productTitle',
-      description: '#productDescription',
-      price: '.a-price-whole',
-      brand: '#bylineInfo',
-      images: '#landingImage'
-    },
-    flipkart: {
-      title: 'h1._2iDkf8',
-      description: 'div._1mXcCf',
-      price: '._30jeq3._16Jk6d',
-      brand: '._2W4v77',
-      images: 'img._396cs4'
+// Helper functions to extract product information
+function getProductDescription() {
+    // Try different common selectors for product descriptions
+    const selectors = [
+        'meta[name="description"]',
+        '.product-description',
+        '#productDescription',
+        '.description',
+        '[data-testid="product-description"]'
+    ];
+
+    for (const selector of selectors) {
+        const element = document.querySelector(selector);
+        if (element) {
+            return element.content || element.textContent || element.innerText;
+        }
     }
-  };
 
-  // Determine which website we're on
-  const isAmazon = window.location.hostname.includes('amazon.in');
-  const isFlipkart = window.location.hostname.includes('flipkart.com');
-  
-  const currentSelectors = isAmazon ? selectors.amazon : selectors.flipkart;
+    // Fallback: get first paragraph or return empty
+    const firstParagraph = document.querySelector('p');
+    return firstParagraph ? firstParagraph.textContent : "No description available";
+}
 
-  // Extract information using the appropriate selectors
-  const productInfo = {
-    title: document.querySelector(currentSelectors.title)?.textContent.trim(),
-    description: document.querySelector(currentSelectors.description)?.textContent.trim(),
-    price: document.querySelector(currentSelectors.price)?.textContent.trim(),
-    brand: document.querySelector(currentSelectors.brand)?.textContent.trim(),
-    url: window.location.href,
-    images: Array.from(document.querySelectorAll(currentSelectors.images))
-      .map(img => img.src)
-      .filter(src => src)
-  };
+function getProductBrand() {
+    // Try different common selectors for brand names
+    const selectors = [
+        'meta[property="product:brand"]',
+        '.brand',
+        '[data-testid="brand"]',
+        '.product-brand'
+    ];
 
-  return productInfo;
+    for (const selector of selectors) {
+        const element = document.querySelector(selector);
+        if (element) {
+            return element.content || element.textContent || element.innerText;
+        }
+    }
+
+    return "Unknown Brand";
+}
+
+function getProductPrice() {
+    // Try different common selectors for prices
+    const selectors = [
+        'meta[property="product:price:amount"]',
+        '.price',
+        '.product-price',
+        '[data-testid="price"]'
+    ];
+
+    for (const selector of selectors) {
+        const element = document.querySelector(selector);
+        if (element) {
+            const priceText = element.content || element.textContent || element.innerText;
+            // Extract numbers from price text
+            const price = priceText.match(/[\d,.]+/);
+            return price ? price[0] : "0.00";
+        }
+    }
+
+    return "0.00";
+}
+
+function getProductCategory() {
+    // Try different common selectors for categories
+    const selectors = [
+        'meta[property="product:category"]',
+        '.category',
+        '.breadcrumb',
+        '[data-testid="category"]'
+    ];
+
+    for (const selector of selectors) {
+        const element = document.querySelector(selector);
+        if (element) {
+            return element.content || element.textContent || element.innerText;
+        }
+    }
+
+    return "General";
 } 
