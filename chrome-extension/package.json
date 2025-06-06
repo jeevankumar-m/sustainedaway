@@ -1,0 +1,16 @@
+{
+  "name": "sustainaway-extension",
+  "version": "1.0.0",
+  "description": "Chrome extension for SustainAway product analysis",
+  "type": "module",
+  "scripts": {
+    "convert-icons": "node convert_icons.js"
+  },
+  "dependencies": {
+    "sharp": "^0.33.5"
+  },
+  "main": "content.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
