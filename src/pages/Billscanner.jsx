@@ -57,6 +57,119 @@ const StatusBadge = ({ text }) => {
   );
 };
 
+// Add this new component at the top with other components
+const SustainabilitySummary = ({ products }) => {
+  // Helper to get the sustainability score from either field
+  const getRawScore = (product) => {
+    if (typeof product.sustainabilityScore === 'number') return product.sustainabilityScore;
+    if (typeof product["Sustainability Rating"] === 'number') return product["Sustainability Rating"];
+    return 0;
+  };
+
+  // Adjust the sustainability score for user encouragement
+  const getAdjustedScore = (score) => {
+    if (typeof score !== 'number') return 0;
+    if (score < 2) return Math.min(score + 2, 5);
+    if (score < 3.5) return Math.min(score + 1, 5);
+    return Math.min(score, 5);
+  };
+
+  // Calculate sustainability statistics using adjusted scores
+  const totalProducts = products.length;
+  // Only count as sustainable if adjusted score is strictly greater than 3
+  const sustainableProducts = products.filter(p => getAdjustedScore(getRawScore(p)) > 3).length;
+  const avgAdjustedScore = totalProducts > 0
+    ? products.reduce((sum, p) => sum + getAdjustedScore(getRawScore(p)), 0) / totalProducts
+    : 0;
+
+  // Calculate total CO₂ impact using adjusted scores
+  const totalCo2Impact = products.reduce((sum, product) => {
+    const score = getAdjustedScore(getRawScore(product));
+    const co2Impact = score >= 3.5 ? 0.3 :
+                     score >= 2.5 ? 0.5 :
+                     0.8;
+    return sum + co2Impact;
+  }, 0);
+
+  // Tracker bar logic
+  const minKg = 0;
+  const maxKg = 50; // For scaling the bar
+  const percent = Math.min((totalCo2Impact / maxKg) * 100, 100);
+  let barColor = 'bg-green-500';
+  let label = 'Low';
+  if (totalCo2Impact > 30) {
+    barColor = 'bg-red-500';
+    label = 'High';
+  } else if (totalCo2Impact > 10) {
+    barColor = 'bg-yellow-400';
+    label = 'Moderate';
+  }
+
+  return (
+    <div className="bg-white rounded-2xl shadow-md p-6 mb-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-800">Sustainability Summary</h3>
+        <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+          <FaLeaf className="text-green-600" />
+        </div>
+      </div>
+      
+      <div className="space-y-4">
+        {/* Sustainability Ratio */}
+        <div className="bg-green-50 rounded-xl p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Sustainable Products</p>
+              <p className="text-2xl font-bold text-green-600">
+                {sustainableProducts}/{totalProducts}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-gray-600">Sustainability Score</p>
+              <p className="text-2xl font-bold text-green-600">
+                {avgAdjustedScore.toFixed(1)}/5
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* CO₂ Impact with tracker bar */}
+        <div className="bg-green-50 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <p className="text-sm text-gray-600">CO₂ Impact</p>
+              <p className="text-2xl font-bold text-green-600">
+                {totalCo2Impact.toFixed(1)}kg
+              </p>
+            </div>
+            <div className="text-right">
+              <span className={`px-3 py-1 rounded-full text-white text-xs font-semibold ${barColor}`}>{label}</span>
+            </div>
+          </div>
+          {/* Tracker bar */}
+          <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden mt-2">
+            <div
+              className={`h-4 ${barColor} transition-all duration-500`}
+              style={{ width: `${percent}%` }}
+            ></div>
+          </div>
+          <div className="flex justify-between text-xs text-gray-400 mt-1">
+            <span>{minKg}kg</span>
+            <span>{maxKg}kg+</span>
+          </div>
+        </div>
+
+        {/* Motivational Message */}
+        <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 text-white">
+          <p className="text-sm font-medium">
+            {sustainableProducts}/{totalProducts} products are sustainable. Total CO₂ emissions for this purchase: {totalCo2Impact.toFixed(1)}kg 🌱
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const BillScanner = () => {
   const [capturedImage, setCapturedImage] = useState(null);
   const [processing, setProcessing] = useState(false);
@@ -361,7 +474,7 @@ const BillScanner = () => {
       </nav>
 
       {/* Main Content */}
-      <main className="pt-20 pb-6 px-4 md:pl-72 transition-all duration-300">
+      <main className="pt-20 pb-24 px-4 md:pl-72 transition-all duration-300">
         <div className="max-w-xl mx-auto">
           {/* Camera Card */}
           <div className="bg-white rounded-2xl shadow-md overflow-hidden mb-5">
@@ -437,6 +550,11 @@ const BillScanner = () => {
               <Spinner />
               <p className="mt-2 text-gray-600">Analyzing your receipt...</p>
             </div>
+          )}
+
+          {/* Add the Sustainability Summary component */}
+          {responseData && responseData.products.length > 0 && (
+            <SustainabilitySummary products={responseData.products} />
           )}
 
           {/* Results Card */}
