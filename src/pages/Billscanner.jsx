@@ -88,7 +88,7 @@ const SustainabilityMeter = ({ rating }) => {
         {/* Center cover */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="bg-white rounded-full w-20 h-20 flex items-center justify-center shadow-inner">
-            <span className="text-2xl font-bold">{normalizedRating}/5</span>
+            <span className="text-2xl font-bold">{normalizedRating.toFixed(1)}/5</span>
           </div>
         </div>
       </div>
