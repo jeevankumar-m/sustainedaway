@@ -6,7 +6,7 @@
 
 - 📸 **Product Scanning**: Upload product images or bills for instant sustainability analysis
 - 🧠 **AI-Powered Analysis**: Get detailed insights about product sustainability and health impact
-- 🗺️ **Interactive Heat Map**: Visualize eco-friendly stores and sustainable shopping locations
+- 🗺️ **Interactive Map**: Visualize eco-friendly stores and sustainable shopping locations using Mapbox
 - 🎮 **Gamified Experience**: Earn rewards and badges for sustainable shopping choices
 - 🤝 **Community Features**: Share feedback and connect with like-minded eco-conscious shoppers
 - 🐦 **Social Integration**: Share sustainability insights directly on X (Twitter)
@@ -17,7 +17,7 @@
 - React 19
 - Material-UI 7
 - TailwindCSS 4
-- Leaflet for maps
+- Mapbox GL JS for interactive maps
 - Framer Motion for animations
 - React Router for navigation
 
@@ -37,6 +37,7 @@
 - Cloudinary account and credentials
 - X (Twitter) API credentials
 - Google AI API credentials
+- Mapbox access token
 
 ## 🚀 Installation & Setup
 
@@ -65,6 +66,7 @@ CLOUDINARY_API_SECRET=your_api_secret
 TWITTER_API_KEY=your_twitter_key
 TWITTER_API_SECRET=your_twitter_secret
 GOOGLE_AI_KEY=your_google_ai_key
+MAPBOX_ACCESS_TOKEN=your_mapbox_token
 ```
 
 ## 🏃‍♂️ Running the Application
@@ -132,7 +134,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - Google AI for analysis capabilities
 - Cloudinary for image processing
-- Leaflet for mapping functionality
+- Mapbox for mapping functionality
 - Firebase for backend services
 - X (Twitter) for social integration
 
