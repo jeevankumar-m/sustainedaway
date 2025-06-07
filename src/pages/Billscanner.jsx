@@ -57,7 +57,48 @@ const StatusBadge = ({ text }) => {
   );
 };
 
-// Add this new component at the top with other components
+// Sustainability Meter Component (copied from Dashboard)
+const SustainabilityMeter = ({ rating }) => {
+  const normalizedRating = Math.min(Math.max(rating, 1), 5);
+  const percentage = (normalizedRating / 5) * 100;
+
+  // Color based on rating
+  const getMeterColor = () => {
+    if (normalizedRating >= 4) return "bg-green-500";
+    if (normalizedRating >= 3) return "bg-yellow-500";
+    return "bg-red-500";
+  };
+
+  return (
+    <div className="flex flex-col items-center my-6">
+      <div className="relative w-32 h-32">
+        {/* Gauge background */}
+        <div className="absolute inset-0 rounded-full border-8 border-gray-200"></div>
+
+        {/* Gauge fill */}
+        <div
+          className={`absolute top-0 left-0 w-16 h-32 origin-right overflow-hidden`}
+          style={{ transform: `rotate(${(percentage / 100) * 180}deg)` }}
+        >
+          <div
+            className={`absolute top-0 left-0 w-32 h-32 rounded-full border-8 ${getMeterColor()}`}
+          ></div>
+        </div>
+
+        {/* Center cover */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="bg-white rounded-full w-20 h-20 flex items-center justify-center shadow-inner">
+            <span className="text-2xl font-bold">{normalizedRating}/5</span>
+          </div>
+        </div>
+      </div>
+      <p className="mt-3 text-sm font-medium text-gray-600">
+        Sustainability Rating
+      </p>
+    </div>
+  );
+};
+
 const SustainabilitySummary = ({ products }) => {
   // Helper to get the sustainability score from either field
   const getRawScore = (product) => {
@@ -113,7 +154,8 @@ const SustainabilitySummary = ({ products }) => {
           <FaLeaf className="text-green-600" />
         </div>
       </div>
-      
+      {/* Add the round SustainabilityMeter here */}
+      <SustainabilityMeter rating={avgAdjustedScore} />
       <div className="space-y-4">
         {/* Sustainability Ratio */}
         <div className="bg-green-50 rounded-xl p-4">
@@ -132,7 +174,6 @@ const SustainabilitySummary = ({ products }) => {
             </div>
           </div>
         </div>
-
         {/* CO₂ Impact with tracker bar */}
         <div className="bg-green-50 rounded-xl p-4">
           <div className="flex items-center justify-between mb-2">
@@ -158,7 +199,6 @@ const SustainabilitySummary = ({ products }) => {
             <span>{maxKg}kg+</span>
           </div>
         </div>
-
         {/* Motivational Message */}
         <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 text-white">
           <p className="text-sm font-medium">
