@@ -1,91 +1,148 @@
 # 🌍 SustainedAway
 
-**SustainedAway** is a sustainability-focused web app that helps users make eco-conscious shopping decisions. By scanning products or bills, users receive instant sustainability insights, health impact analysis, and community-driven ratings. The app includes a Leaflet-based sustainability heat map, a gamified experience, and even allows sharing feedback on X (Twitter).
+**SustainedAway** is a comprehensive sustainability-focused web application that empowers users to make eco-conscious shopping decisions. The platform combines advanced image processing, AI analysis, and community features to provide detailed insights about product sustainability and environmental impact.
 
----
+## 🌟 Key Features
 
-## 🛠️ Getting Started
+- 📸 **Product Scanning**: Upload product images or bills for instant sustainability analysis
+- 🧠 **AI-Powered Analysis**: Get detailed insights about product sustainability and health impact
+- 🗺️ **Interactive Heat Map**: Visualize eco-friendly stores and sustainable shopping locations
+- 🎮 **Gamified Experience**: Earn rewards and badges for sustainable shopping choices
+- 🤝 **Community Features**: Share feedback and connect with like-minded eco-conscious shoppers
+- 🐦 **Social Integration**: Share sustainability insights directly on X (Twitter)
 
-This project is divided into a frontend React app and three backend servers.
+## 🛠️ Technical Stack
 
-### 🔧 Prerequisites
+### Frontend
+- React 19
+- Material-UI 7
+- TailwindCSS 4
+- Leaflet for maps
+- Framer Motion for animations
+- React Router for navigation
 
-Make sure you have the following installed:
+### Backend
+- Node.js with Express
+- Python for AI/ML processing
+- Firebase/Firestore for data storage
+- Cloudinary for image management
+- Google Generative AI for analysis
+
+## 🔧 Prerequisites
 
 - Node.js (v14 or above)
 - npm
-- Python (for `server.js and server2.js`)
-- Firebase 
-- Cloudinary credentials (for image upload in `server3.js`)
-- X API credentials
+- Python 3.x
+- Firebase account and credentials
+- Cloudinary account and credentials
+- X (Twitter) API credentials
+- Google AI API credentials
 
----
+## 🚀 Installation & Setup
 
-## 🚀 Running the App
-
-### 1️⃣ Start the Frontend
-
+1. **Clone the repository**
 ```bash
+git clone [repository-url]
+cd sustainedaway
+```
+
+2. **Install dependencies**
+```bash
+# Install Node.js dependencies
 npm install
+
+# Install Python dependencies
+pip install -r requirements.txt
+```
+
+3. **Configure environment variables**
+Create a `.env` file in the root directory with:
+```
+FIREBASE_API_KEY=your_firebase_key
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+TWITTER_API_KEY=your_twitter_key
+TWITTER_API_SECRET=your_twitter_secret
+GOOGLE_AI_KEY=your_google_ai_key
+```
+
+## 🏃‍♂️ Running the Application
+
+### Development Mode
+
+1. **Start the frontend development server**
+```bash
+npm run dev
+```
+Frontend will be available at: `http://localhost:3000`
+
+2. **Start the backend servers**
+```bash
+# Start the main server
 npm start
 ```
+This will start all three backend servers:
+- Main App Server: `http://localhost:5000`
+- Python Analysis Server: `http://localhost:5001`
+- Image Upload Server: `http://localhost:5002`
 
-Runs the React app on [http://localhost:3000](http://localhost:3000)
-
----
-
-### 2️⃣ Start the Backend Servers
-
-In the project root directory:
-
-#### ✅ Server 1 (Main App Server)
+### Production Build
 
 ```bash
-node server.js
+npm run build
+npm run preview
 ```
 
-Runs on: `http://localhost:5000`
+## 📁 Project Structure
 
-#### ✅ Server 2 (Python Analysis Server)
-
-Make sure your Python script is compatible and listed in `requirements.txt`.
-
-```bash
-node server2.js
+```
+sustainedaway/
+├── src/                    # Frontend source code
+├── chrome-extension/       # Browser extension files
+├── public/                # Static assets
+├── server.js             # Main Express server
+├── server2.js            # Python integration server
+├── server3.js            # Image processing server
+├── analyze_product.py    # Product analysis script
+├── process_bill.py       # Bill processing script
+├── process_image.py      # Image processing utilities
+└── requirements.txt      # Python dependencies
 ```
 
-Runs on: `http://localhost:5001`
+## 🔄 API Endpoints
 
-This server auto-installs Python dependencies and executes sustainability analysis.
+### Main Server (server.js)
+- `POST /api/analyze` - Product analysis
+- `GET /api/stores` - Get eco-friendly stores
+- `POST /api/feedback` - Submit user feedback
 
-#### ✅ Server 3 (Image Upload + AI Handler)
+### Python Server (server2.js)
+- `POST /api/process-bill` - Process shopping bills
+- `GET /api/sustainability-score` - Get product sustainability score
 
-```bash
-node server3.js
-```
+### Image Server (server3.js)
+- `POST /api/upload` - Upload and process images
+- `GET /api/image-analysis` - Get image analysis results
 
-Runs on: `http://localhost:5002`
+## 🤝 Contributing
 
-Handles Cloudinary uploads and sends back image URLs.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
----
+## 📝 License
 
-## 📦 Available Scripts (in `/client`)
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-| Command           | Description                                 |
-|------------------|---------------------------------------------|
-| `npm start`       | Runs the app in development mode            |
-| `npm test`        | Launches test runner                        |
-| `npm run build`   | Builds the app for production               |
-| `npm run eject`   | Ejects the app configuration (not reversible) |
+## 🙏 Acknowledgments
 
----
-
-## 🔗 External Integrations
-
-- **Cloudinary** – For image uploads (server3.js)
-- **Leaflet** – Interactive sustainability heat map (eco-store markers)
-- **Firebase / Firestore** – Product & user data storage
-- **Twitter (X)** – For sharing sustainability feedback
+- Google AI for analysis capabilities
+- Cloudinary for image processing
+- Leaflet for mapping functionality
+- Firebase for backend services
+- X (Twitter) for social integration
 
 ---
