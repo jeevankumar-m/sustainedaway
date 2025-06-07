@@ -77,15 +77,12 @@ npm run dev
 ```
 Frontend will be available at: `http://localhost:3000`
 
-2. **Start the backend servers**
+2. **Start the backend server**
 ```bash
-# Start the main server
+# Start the combined server
 npm start
 ```
-This will start all three backend servers:
-- Main App Server: `http://localhost:5000`
-- Python Analysis Server: `http://localhost:5001`
-- Image Upload Server: `http://localhost:5002`
+This will start the combined server that handles all backend functionality at: `http://localhost:5000`
 
 ### Production Build
 
@@ -101,9 +98,7 @@ sustainedaway/
 ├── src/                    # Frontend source code
 ├── chrome-extension/       # Browser extension files
 ├── public/                # Static assets
-├── server.js             # Main Express server
-├── server2.js            # Python integration server
-├── server3.js            # Image processing server
+├── combined_server.js     # Combined Express server
 ├── analyze_product.py    # Product analysis script
 ├── process_bill.py       # Bill processing script
 ├── process_image.py      # Image processing utilities
@@ -112,16 +107,12 @@ sustainedaway/
 
 ## 🔄 API Endpoints
 
-### Main Server (server.js)
+### Combined Server (combined_server.js)
 - `POST /api/analyze` - Product analysis
 - `GET /api/stores` - Get eco-friendly stores
 - `POST /api/feedback` - Submit user feedback
-
-### Python Server (server2.js)
 - `POST /api/process-bill` - Process shopping bills
 - `GET /api/sustainability-score` - Get product sustainability score
-
-### Image Server (server3.js)
 - `POST /api/upload` - Upload and process images
 - `GET /api/image-analysis` - Get image analysis results
 
