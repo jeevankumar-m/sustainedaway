@@ -23,6 +23,11 @@ import {
   onSnapshot,
   orderBy,
   limit,
+  doc,
+  updateDoc,
+  getDoc,
+  setDoc,
+  getDocs,
 } from "firebase/firestore";
 import BackgroundIcons from "../BackgroundIcons";
 
@@ -75,50 +80,75 @@ const History = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [expandedTips, setExpandedTips] = useState({});
   const [loading, setLoading] = useState(true);
+  const [purchaseConfirmations, setPurchaseConfirmations] = useState({});
+  const [totalImpact, setTotalImpact] = useState({ ecoSwitches: 0, co2Avoided: 0 });
   const navigate = useNavigate();
   const auth = getAuth();
   const historyContainerRef = useRef(null);
 
+  // Fetch user's history and impact data
   useEffect(() => {
-    const user = auth.currentUser;
-    if (!user) {
-      navigate('/login');
-      return;
-    }
+    const fetchUserData = async () => {
+      const user = auth.currentUser;
+      if (!user) {
+        navigate('/login');
+        return;
+      }
 
-    setLoading(true);
-    const historyRef = collection(db, "history");
-    const q = query(
-      historyRef,
-      where("userId", "==", user.uid)
-    );
+      setLoading(true);
+      try {
+        const historyRef = collection(db, "history");
+        const q = query(
+          historyRef,
+          where("userId", "==", user.uid)
+        );
 
-    // Set up real-time listener
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const historyData = snapshot.docs
-          .map((doc) => ({
+        const snapshot = await getDocs(q);
+        const historyData = [];
+        const confirmations = {};
+        let totalEcoSwitches = 0;
+        let totalCo2Avoided = 0;
+
+        snapshot.docs.forEach(doc => {
+          const data = doc.data();
+          historyData.push({
             id: doc.id,
-            ...doc.data(),
-            dateScanned: doc.data().dateScanned?.toDate() || new Date()
-          }))
-          // Sort the data client-side
-          .sort((a, b) => b.dateScanned - a.dateScanned);
+            ...data,
+            dateScanned: data.dateScanned?.toDate() || new Date()
+          });
+
+          // If purchase is confirmed, add to totals
+          if (data.purchaseConfirmed === true) {
+            totalEcoSwitches += data.environmentalImpact?.ecoSwitches || 0;
+          } else if (data.purchaseConfirmed === false) {
+            // Only count CO2 avoided when user chooses not to buy
+            totalCo2Avoided += data.environmentalImpact?.co2Avoided || 0;
+          }
+
+          // Set purchase confirmation state
+          if (data.purchaseConfirmed !== undefined) {
+            confirmations[doc.id] = data.purchaseConfirmed;
+          }
+        });
+
+        // Sort history by date
+        historyData.sort((a, b) => b.dateScanned - a.dateScanned);
         
         setHistory(historyData);
-        setLoading(false);
-      },
-      (error) => {
-        console.error("Error fetching history:", error);
-        setLoading(false);
-        setHistory([]);
-      }
-    );
+        setPurchaseConfirmations(confirmations);
+        setTotalImpact({
+          ecoSwitches: totalEcoSwitches,
+          co2Avoided: totalCo2Avoided
+        });
 
-    return () => {
-      unsubscribe();
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setLoading(false);
+      }
     };
+
+    fetchUserData();
   }, [auth, navigate]);
 
   const handleSignOut = async () => {
@@ -132,6 +162,44 @@ const History = () => {
 
   const toggleRecyclingTips = (id) => {
     setExpandedTips((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handlePurchaseConfirmation = async (itemId, willBuy) => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const item = history.find(h => h.id === itemId);
+      if (!item) return;
+
+      const ecoSwitches = willBuy ? 1 : 0;
+      const co2Avoided = willBuy ? 0 : 2; // Only count CO2 when not buying
+
+      // Update purchase confirmation state
+      setPurchaseConfirmations(prev => ({
+        ...prev,
+        [itemId]: willBuy
+      }));
+
+      // Update total impact
+      setTotalImpact(prev => ({
+        ecoSwitches: willBuy ? prev.ecoSwitches + ecoSwitches : prev.ecoSwitches,
+        co2Avoided: willBuy ? prev.co2Avoided : prev.co2Avoided + co2Avoided
+      }));
+
+      // Update history document
+      const historyRef = doc(db, "history", itemId);
+      await updateDoc(historyRef, {
+        purchaseConfirmed: willBuy,
+        environmentalImpact: {
+          ecoSwitches,
+          co2Avoided
+        }
+      });
+
+    } catch (error) {
+      console.error("Error updating purchase confirmation:", error);
+    }
   };
 
   return (
@@ -341,6 +409,21 @@ const History = () => {
             </p>
           </div>
 
+          {/* Environmental Impact Summary */}
+          <div className="bg-white rounded-2xl shadow-md p-6 mb-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Your Environmental Impact</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-green-50 rounded-xl p-4 text-center">
+                <div className="text-2xl font-bold text-green-600">{totalImpact.ecoSwitches}</div>
+                <div className="text-sm text-gray-600">Eco-friendly Switches</div>
+              </div>
+              <div className="bg-green-50 rounded-xl p-4 text-center">
+                <div className="text-2xl font-bold text-green-600">{totalImpact.co2Avoided}kg</div>
+                <div className="text-sm text-gray-600">CO₂ Avoided</div>
+              </div>
+            </div>
+          </div>
+
           {/* Loading State */}
           {loading && (
             <div className="bg-white rounded-2xl shadow-md p-6 mb-5 text-center">
@@ -434,6 +517,40 @@ const History = () => {
                       </div>
                     </div>
 
+                    {/* Purchase Confirmation - Only show if not already confirmed */}
+                    {purchaseConfirmations[item.id] === undefined && (
+                      <div className="mt-4 pt-3 border-t border-gray-100">
+                        <h4 className="text-sm font-medium text-gray-700 mb-3">Purchase Decision</h4>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => handlePurchaseConfirmation(item.id, true)}
+                            className="flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          >
+                            Will Buy
+                          </button>
+                          <button
+                            onClick={() => handlePurchaseConfirmation(item.id, false)}
+                            className="flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          >
+                            Won't Buy
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Show confirmation status if decision made */}
+                    {purchaseConfirmations[item.id] !== undefined && (
+                      <div className="mt-4 pt-3 border-t border-gray-100">
+                        <div className="text-sm text-gray-600">
+                          {purchaseConfirmations[item.id] ? (
+                            <span className="text-green-600">✅ Added to your environmental impact</span>
+                          ) : (
+                            <span className="text-gray-500">❌ Not added to impact</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Health Impact Section */}
                     {item.healthimpact && (
                       <div className="mt-4 pt-3 border-t border-gray-100">
@@ -485,9 +602,9 @@ const History = () => {
                               ))}
                             </ul>
                           ) : (
-                            <p className="text-gray-700 text-sm">
+                          <p className="text-gray-700 text-sm">
                               No recycling tips available for this product.
-                            </p>
+                          </p>
                           )}
                         </div>
                       </div>

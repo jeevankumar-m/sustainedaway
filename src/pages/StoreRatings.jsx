@@ -345,21 +345,21 @@ const StoreRatings = () => {
 
         if (!foundGroup) {
           const key = `${lat},${lng}`;
-          storeGroups[key] = {
-            storeName,
-            lat,
-            lng,
-            ratings: [rating],
+            storeGroups[key] = {
+              storeName,
+              lat,
+              lng,
+              ratings: [rating],
             comments: comment ? [{
               text: comment,
               timestamp,
               userId,
               userEmail
             }] : [],
-            timestamps: [timestamp],
-            coordinates: [lng, lat],
-          };
-        }
+              timestamps: [timestamp],
+              coordinates: [lng, lat],
+            };
+          }
       });
 
       // Calculate averages and prepare GeoJSON
@@ -807,8 +807,8 @@ const StoreRatings = () => {
 
     if (!storeName.trim()) {
       setMessage({ text: "Please enter a store name", type: "error" });
-      return;
-    }
+        return;
+      }
 
     const user = auth.currentUser;
     if (!user) {
@@ -842,7 +842,7 @@ const StoreRatings = () => {
       } else {
         // Create new rating
         await addDoc(collection(db, "storeRatings"), ratingData);
-        setMessage({ text: "Rating submitted successfully!", type: "success" });
+      setMessage({ text: "Rating submitted successfully!", type: "success" });
       }
 
       // Reset form
