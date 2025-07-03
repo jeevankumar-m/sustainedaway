@@ -15,6 +15,7 @@ import {
   FaWalking,
   FaBicycle,
   FaBus,
+  FaRecycle,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import mapboxgl from "mapbox-gl";
@@ -1248,6 +1249,20 @@ const StoreRatings = () => {
                       <FaComments className="text-green-600 text-sm group-hover:scale-110 transition-transform" />
                     </div>
                     <span>Sustainavoice</span>
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate("/sustainascrap");
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-green-50 hover:shadow-sm transition-all duration-200 group"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                      <FaRecycle className="text-green-600 text-sm group-hover:scale-110 transition-transform" />
+                    </div>
+                    <span>SustainaScrap</span>
                   </button>
                 </li>
                 <li>

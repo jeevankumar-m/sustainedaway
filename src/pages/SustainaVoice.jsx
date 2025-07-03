@@ -18,6 +18,7 @@ import {
   FaLeaf,
   FaImage,
   FaPaperPlane,
+  FaRecycle,
 } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import BackgroundIcons from "../BackgroundIcons";
@@ -422,12 +423,26 @@ const SustainaVoice = () => {
                       setMenuOpen(false);
                       navigate("/sustainavoice");
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white font-medium shadow-sm hover:shadow-md transition-all duration-200 group"
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-green-50 hover:shadow-sm transition-all duration-200 group"
                   >
-                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                      <FaComments className="text-white text-sm group-hover:scale-110 transition-transform" />
+                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                      <FaComments className="text-green-600 text-sm group-hover:scale-110 transition-transform" />
                     </div>
-                    <span>SustainaVoice</span>
+                    <span>Sustainavoice</span>
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate("/sustainascrap");
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-green-50 hover:shadow-sm transition-all duration-200 group"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                      <FaRecycle className="text-green-600 text-sm group-hover:scale-110 transition-transform" />
+                    </div>
+                    <span>SustainaScrap</span>
                   </button>
                 </li>
                 <li>
