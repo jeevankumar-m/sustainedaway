@@ -10,6 +10,8 @@ import {
   FaCommentDots,
   FaArrowRight,
   FaChevronDown,
+
+//Reverted some changes
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { motion, useAnimation } from "framer-motion";
